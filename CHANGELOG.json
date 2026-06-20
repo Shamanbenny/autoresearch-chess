@@ -811,15 +811,15 @@
       "api_version": "v4_1",
       "engine_file": "engine_csharp/src/Engine.Core/V4/V4_1Engine.cs",
       "served": false,
-      "status": "rejected",
-      "commit": "<n/a>",
+      "status": "approved",
+      "commit": "cdcc74f",
       "hypotheses": [
         "Quiet checking moves are tactically important enough that they should not be pruned by shallow quiet futility pruning or reduced by late-move reduction merely because they appear late in move ordering.",
         "Exempting only quiet moves that give check should improve tactical coverage against stockfish-1800 while preserving the existing V4.0 evaluation, null-move, futility, killer, and quiet-history behavior for ordinary quiet moves."
       ],
       "summary": "Added a NativeBoard.MoveGivesCheck helper and used it to keep quiet checking moves out of shallow quiet futility pruning. Negamax now detects whether a searched move gives check after making it, and late-move reduction skips those checking moves while leaving the existing reduction policy unchanged for non-checking quiet moves.",
       "implementation_summary": "Added a NativeBoard.MoveGivesCheck helper and used it to keep quiet checking moves out of shallow quiet futility pruning. Negamax now detects whether a searched move gives check after making it, and late-move reduction skips those checking moves while leaving the existing reduction policy unchanged for non-checking quiet moves.",
-      "evaluation_log_path": "<n/a>",
+      "evaluation_log_path": "autoresearch/approved_logs/V4_1Engine-v4_1-0620143922-result.csv",
       "evaluation_opponents": {
         "stockfish-1800": {
           "games": 1000,
@@ -828,10 +828,23 @@
           "losses": 602,
           "score": 294.5,
           "score_rate": 0.2945,
-          "text": "C# v4.1 scored 294.5/1000 against Stockfish (1800 Elo): 191 wins, 207 draws, 602 losses, score rate 0.2945."
+          "text": "C# v4.1 scored 294.5/1000 against Stockfish (1800 Elo): 191 wins, 207 draws, 602 losses, score rate 0.2945, improvement_lcb95 0.0326 versus v4.0.",
+          "lcb95": 0.274,
+          "improvement_lcb95": 0.0326,
+          "reference_version": "v4.0",
+          "reference_score_rate": 0.234,
+          "max_plies_rate": 0.047,
+          "failure_counts": {
+            "crash": 0,
+            "illegal_move": 0,
+            "timeout": 0,
+            "harness": 0,
+            "max_plies": 47
+          }
         }
       },
-      "limitations": []
+      "limitations": [],
+      "inferred_conclusion": "Approved under the improvement-bound rule: quiet-check preservation raised score_rate from the v4.0 Stockfish-1800 reference 0.2340 to 0.2945 with improvement_lcb95=0.0326, zero failures, and acceptable max_plies_rate=0.0470. The tactical signal is real but modest, so future work should combine quiet-check protection with higher-impact search or quiescence changes rather than repeatedly retuning the same exemption."
     },
     {
       "version": "v4.2",
@@ -855,10 +868,23 @@
           "losses": 616,
           "score": 289.0,
           "score_rate": 0.289,
-          "text": "C# v4.2 scored 289.0/1000 against Stockfish (1800 Elo): 194 wins, 190 draws, 616 losses, score rate 0.2890."
+          "text": "C# v4.2 scored 289.0/1000 against Stockfish (1800 Elo): 194 wins, 190 draws, 616 losses, score rate 0.2890, improvement_lcb95 -0.0345 versus v4.1.",
+          "lcb95": 0.2685,
+          "improvement_lcb95": -0.0345,
+          "reference_version": "v4.1",
+          "reference_score_rate": 0.2945,
+          "max_plies_rate": 0.043,
+          "failure_counts": {
+            "crash": 0,
+            "illegal_move": 0,
+            "timeout": 0,
+            "harness": 0,
+            "max_plies": 43
+          }
         }
       },
-      "limitations": []
+      "limitations": [],
+      "inferred_conclusion": "Rejected under the advancing-reference improvement rule: although queen mobility remained above the original v4.0 calibration, it scored 0.2890 against Stockfish-1800 after v4.1 became the reference, below v4.1's 0.2945 with improvement_lcb95=-0.0345. The small generic queen-mobility term is not a useful successor to v4.1 and should not be promoted as a seed."
     },
     {
       "version": "v4.3",
@@ -882,10 +908,23 @@
           "losses": 641,
           "score": 278.5,
           "score_rate": 0.2785,
-          "text": "C# v4.3 scored 278.5/1000 against Stockfish (1800 Elo): 198 wins, 161 draws, 641 losses, score rate 0.2785."
+          "text": "C# v4.3 scored 278.5/1000 against Stockfish (1800 Elo): 198 wins, 161 draws, 641 losses, score rate 0.2785, improvement_lcb95 -0.0456 versus v4.1.",
+          "lcb95": 0.2571,
+          "improvement_lcb95": -0.0456,
+          "reference_version": "v4.1",
+          "reference_score_rate": 0.2945,
+          "max_plies_rate": 0.036,
+          "failure_counts": {
+            "crash": 0,
+            "illegal_move": 0,
+            "timeout": 0,
+            "harness": 0,
+            "max_plies": 36
+          }
         }
       },
-      "limitations": []
+      "limitations": [],
+      "inferred_conclusion": "Rejected under the advancing-reference improvement rule: this quiet-check pruning/LMR variant scored 0.2785 against Stockfish-1800 versus the newly approved v4.1 reference 0.2945, with improvement_lcb95=-0.0456. The repeated quiet-check exemption is directionally useful versus v4.0, but weaker than v4.1 and not worth promoting."
     },
     {
       "version": "v4.4",
@@ -909,25 +948,38 @@
           "losses": 601,
           "score": 299.0,
           "score_rate": 0.299,
-          "text": "C# v4.4 scored 299.0/1000 against Stockfish (1800 Elo): 199 wins, 200 draws, 601 losses, score rate 0.2990."
+          "text": "C# v4.4 scored 299.0/1000 against Stockfish (1800 Elo): 199 wins, 200 draws, 601 losses, score rate 0.2990, improvement_lcb95 -0.0253 versus v4.1.",
+          "lcb95": 0.2774,
+          "improvement_lcb95": -0.0253,
+          "reference_version": "v4.1",
+          "reference_score_rate": 0.2945,
+          "max_plies_rate": 0.046,
+          "failure_counts": {
+            "crash": 0,
+            "illegal_move": 0,
+            "timeout": 0,
+            "harness": 0,
+            "max_plies": 46
+          }
         }
       },
-      "limitations": []
+      "limitations": [],
+      "inferred_conclusion": "Rejected under the advancing-reference improvement rule: the shallow quiet-check extension scored 0.2990, only slightly above v4.1's 0.2945, and its improvement_lcb95=-0.0253 did not clear the confidence gate. The extension may be directionally useful, but the measured gain over v4.1 is too small for approval."
     },
     {
       "version": "v4.5",
       "api_version": "v4_5",
       "engine_file": "engine_csharp/src/Engine.Core/V4/V4_5Engine.cs",
       "served": false,
-      "status": "rejected",
-      "commit": "<n/a>",
+      "status": "approved",
+      "commit": "623800e",
       "hypotheses": [
         "The current quiescence losing-capture filter is too broad because it skips any non-promotion capture where the attacker is more valuable than the victim, even when the captured piece is loose.",
         "Only pruning those high-attacker-value captures when the destination is actually defended by the opponent should recover tactical material wins against stockfish-1800 with a limited node-cost increase."
       ],
       "summary": "Changed IsObviouslyLosingCapture so quiescence keeps high-value-attacker captures of lower-value pieces unless the target square is defended by the opponent; promotions and non-captures remain unpruned by this helper.",
       "implementation_summary": "Changed IsObviouslyLosingCapture so quiescence keeps high-value-attacker captures of lower-value pieces unless the target square is defended by the opponent; promotions and non-captures remain unpruned by this helper.",
-      "evaluation_log_path": "<n/a>",
+      "evaluation_log_path": "autoresearch/approved_logs/V4_5Engine-v4_5-0620160421-result.csv",
       "evaluation_opponents": {
         "stockfish-1800": {
           "games": 1000,
@@ -936,25 +988,38 @@
           "losses": 512,
           "score": 403.0,
           "score_rate": 0.403,
-          "text": "C# v4.5 scored 403.0/1000 against Stockfish (1800 Elo): 318 wins, 170 draws, 512 losses, score rate 0.4030."
+          "text": "C# v4.5 scored 403.0/1000 against Stockfish (1800 Elo): 318 wins, 170 draws, 512 losses, score rate 0.4030, improvement_lcb95 0.0774 versus v4.1.",
+          "lcb95": 0.3796,
+          "improvement_lcb95": 0.0774,
+          "reference_version": "v4.1",
+          "reference_score_rate": 0.2945,
+          "max_plies_rate": 0.036,
+          "failure_counts": {
+            "crash": 0,
+            "illegal_move": 0,
+            "timeout": 0,
+            "harness": 0,
+            "max_plies": 36
+          }
         }
       },
-      "limitations": []
+      "limitations": [],
+      "inferred_conclusion": "Approved under the improvement-bound rule against the advancing v4.1 reference: the defender-aware quiescence losing-capture filter raised score_rate from 0.2945 to 0.4030 with improvement_lcb95=0.0774, zero failures, and acceptable max_plies_rate=0.0360. This is the strongest standalone V4 signal so far and should be preserved as a seed idea for future tactical-search work."
     },
     {
       "version": "v4.6",
       "api_version": "v4_6",
       "engine_file": "engine_csharp/src/Engine.Core/V4/V4_6Engine.cs",
       "served": false,
-      "status": "rejected",
-      "commit": "<n/a>",
+      "status": "approved",
+      "commit": "04caa13",
       "hypotheses": [
         "Keeping the v4.5 defender-aware quiescence capture filter should recover material-winning captures that the older high-attacker-value filter pruned too broadly.",
         "Protecting quiet checking moves from shallow quiet futility pruning and late-move reduction, with a one-ply extension only at remaining depths up to 2, should improve tactical horizon coverage while keeping the existing pruning stack bounded."
       ],
       "summary": "Changed quiescence losing-capture pruning to skip high-attacker-value captures only when the destination is opponent-defended. Added MoveGivesCheck and quiet-check-aware negamax handling: quiet checking moves are preserved from shallow quiet futility pruning, excluded from late-move reduction, and receive a one-ply shallow extension. Quiet move status is captured before MakeMove so late-move reduction uses the intended pre-move classification.",
       "implementation_summary": "Changed quiescence losing-capture pruning to skip high-attacker-value captures only when the destination is opponent-defended. Added MoveGivesCheck and quiet-check-aware negamax handling: quiet checking moves are preserved from shallow quiet futility pruning, excluded from late-move reduction, and receive a one-ply shallow extension. Quiet move status is captured before MakeMove so late-move reduction uses the intended pre-move classification.",
-      "evaluation_log_path": "<n/a>",
+      "evaluation_log_path": "autoresearch/approved_logs/V4_6Engine-v4_6-0620162528-result.csv",
       "evaluation_opponents": {
         "stockfish-1800": {
           "games": 1000,
@@ -963,10 +1028,23 @@
           "losses": 451,
           "score": 459.5,
           "score_rate": 0.4595,
-          "text": "C# v4.6 scored 459.5/1000 against Stockfish (1800 Elo): 370 wins, 179 draws, 451 losses, score rate 0.4595."
+          "text": "C# v4.6 scored 459.5/1000 against Stockfish (1800 Elo): 370 wins, 179 draws, 451 losses, score rate 0.4595, improvement_lcb95 0.0226 versus v4.5.",
+          "lcb95": 0.435,
+          "improvement_lcb95": 0.0226,
+          "reference_version": "v4.5",
+          "reference_score_rate": 0.403,
+          "max_plies_rate": 0.036,
+          "failure_counts": {
+            "crash": 0,
+            "illegal_move": 0,
+            "timeout": 0,
+            "harness": 0,
+            "max_plies": 36
+          }
         }
       },
-      "limitations": []
+      "limitations": [],
+      "inferred_conclusion": "Approved under the improvement-bound rule against the advancing v4.5 reference: combining the defender-aware quiescence filter with quiet-check protection and a bounded shallow extension raised score_rate from 0.4030 to 0.4595 with improvement_lcb95=0.0226, zero failures, and acceptable max_plies_rate=0.0360. This is the best V4 result so far; future experiments should build from v4.6 and continue with guarded tactical-search improvements rather than generic static evaluation additions."
     }
   ]
 }

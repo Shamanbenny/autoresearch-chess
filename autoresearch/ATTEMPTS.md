@@ -694,8 +694,8 @@ Use this exact structure for each appended attempt:
 
 ## Attempt: 2026-06-20T14:57:41Z - v4.1
 
-- status: `rejected`
-- commit: `<n/a>`
+- status: `approved`
+- commit: `cdcc74f`
 - evaluator_baseline: `stockfish-1800`
 - seed_version: `v4.0`
 - seed_file: `engine_csharp/src/Engine.Core/V4/V4_0Engine.cs`
@@ -705,14 +705,15 @@ Use this exact structure for each appended attempt:
   - `Quiet checking moves are tactically important enough that they should not be pruned by shallow quiet futility pruning or reduced by late-move reduction merely because they appear late in move ordering.`
   - `Exempting only quiet moves that give check should improve tactical coverage against stockfish-1800 while preserving the existing V4.0 evaluation, null-move, futility, killer, and quiet-history behavior for ordinary quiet moves.`
 - implementation_summary: `Added a NativeBoard.MoveGivesCheck helper and used it to keep quiet checking moves out of shallow quiet futility pruning. Negamax now detects whether a searched move gives check after making it, and late-move reduction skips those checking moves while leaving the existing reduction policy unchanged for non-checking quiet moves.`
-- evaluation_log_path: `<n/a>`
+- evaluation_log_path: `autoresearch/approved_logs/V4_1Engine-v4_1-0620143922-result.csv`
 - wins/draws/losses: `191/207/602`
 - score: `294.5`
 - score_rate: `0.2945`
+- improvement_lcb95: `0.0326`
 - average_plies: `100.8760`
 - average_processing_time_ms: `101.5131`
 - average_positions_or_nodes: `6567.6910`
-- inferred_conclusion: `Rejected: exempting quiet checking moves from shallow futility pruning and late-move reduction improved score_rate from the V4.0 stockfish-1800 calibration baseline of 0.2340 to 0.2945, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0470, but lcb95=0.2740 remained far below the required 0.5 approval threshold. The hypothesis appears directionally useful for tactical coverage against the stronger baseline, but it is not nearly sufficient on its own; future V4 experiments should preserve this idea only if combined with larger move-quality gains, likely from stronger tactical search/selectivity or evaluation changes rather than another narrow pruning exemption.`
+- inferred_conclusion: `Approved under the improvement-bound rule: quiet-check preservation raised score_rate from the v4.0 Stockfish-1800 reference 0.2340 to 0.2945 with improvement_lcb95=0.0326, zero failures, and acceptable max_plies_rate=0.0470. The tactical signal is real but modest, so future work should combine quiet-check protection with higher-impact search or quiescence changes rather than repeatedly retuning the same exemption.`
 
 ## Attempt: 2026-06-20T15:18:21Z - v4.2
 
@@ -731,10 +732,11 @@ Use this exact structure for each appended attempt:
 - wins/draws/losses: `194/190/616`
 - score: `289.0`
 - score_rate: `0.2890`
+- improvement_lcb95: `-0.0345`
 - average_plies: `101.8110`
 - average_processing_time_ms: `100.9776`
 - average_positions_or_nodes: `7098.9991`
-- inferred_conclusion: `The tiny queen-mobility term was not a viable improvement: although raw score_rate rose above the previously approved reference score_rate, lcb95 remained far below the 0.5 approval threshold and losses were heavy. Future attempts should avoid adding generic queen activity scoring on this v4.2 base and instead target larger tactical/search-quality issues or concrete conversion failures with evidence that they can materially improve paired outcomes.`
+- inferred_conclusion: `Rejected under the advancing-reference improvement rule: although queen mobility remained above the original v4.0 calibration, it scored 0.2890 against Stockfish-1800 after v4.1 became the reference, below v4.1's 0.2945 with improvement_lcb95=-0.0345. The small generic queen-mobility term is not a useful successor to v4.1 and should not be promoted as a seed.`
 
 ## Attempt: 2026-06-20T15:39:29Z - v4.3
 
@@ -753,10 +755,11 @@ Use this exact structure for each appended attempt:
 - wins/draws/losses: `198/161/641`
 - score: `278.5`
 - score_rate: `0.2785`
+- improvement_lcb95: `-0.0456`
 - average_plies: `100.0820`
 - average_processing_time_ms: `101.3758`
 - average_positions_or_nodes: `6627.6102`
-- inferred_conclusion: `Rejected: preserving quiet checking moves from shallow futility pruning and late-move reduction improved score_rate over the V4.0 stockfish-1800 reference baseline (0.2785 vs 0.2340) with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0360, but lcb95=0.2570 remained far below the required 0.5 threshold. The quiet-check exemption is directionally useful for tactical coverage, but it is not sufficient against stockfish-1800; future attempts need larger move-quality gains from stronger tactical search/selectivity or more impactful evaluation changes rather than another narrow pruning exemption alone.`
+- inferred_conclusion: `Rejected under the advancing-reference improvement rule: this quiet-check pruning/LMR variant scored 0.2785 against Stockfish-1800 versus the newly approved v4.1 reference 0.2945, with improvement_lcb95=-0.0456. The repeated quiet-check exemption is directionally useful versus v4.0, but weaker than v4.1 and not worth promoting.`
 
 ## Attempt: 2026-06-20T16:01:15Z - v4.4
 
@@ -775,15 +778,16 @@ Use this exact structure for each appended attempt:
 - wins/draws/losses: `199/200/601`
 - score: `299.0`
 - score_rate: `0.2990`
+- improvement_lcb95: `-0.0253`
 - average_plies: `102.3270`
 - average_processing_time_ms: `101.7022`
 - average_positions_or_nodes: `6773.7643`
-- inferred_conclusion: `Rejected: preserving and shallow-extending quiet checking moves improved score_rate over the V4.0 stockfish-1800 reference baseline (0.2990 vs 0.2340), with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0460, but lcb95=0.2773 remained far below the required 0.5 threshold. The tactical quiet-check treatment is directionally useful but still much too small against stockfish-1800; future V4 attempts need larger move-quality gains from broader tactical search, evaluation, or selectivity improvements rather than further narrow quiet-check tuning.`
+- inferred_conclusion: `Rejected under the advancing-reference improvement rule: the shallow quiet-check extension scored 0.2990, only slightly above v4.1's 0.2945, and its improvement_lcb95=-0.0253 did not clear the confidence gate. The extension may be directionally useful, but the measured gain over v4.1 is too small for approval.`
 
 ## Attempt: 2026-06-20T16:21:57Z - v4.5
 
-- status: `rejected`
-- commit: `<n/a>`
+- status: `approved`
+- commit: `623800e`
 - evaluator_baseline: `stockfish-1800`
 - seed_version: `v4.0`
 - seed_file: `engine_csharp/src/Engine.Core/V4/V4_0Engine.cs`
@@ -793,19 +797,20 @@ Use this exact structure for each appended attempt:
   - `The current quiescence losing-capture filter is too broad because it skips any non-promotion capture where the attacker is more valuable than the victim, even when the captured piece is loose.`
   - `Only pruning those high-attacker-value captures when the destination is actually defended by the opponent should recover tactical material wins against stockfish-1800 with a limited node-cost increase.`
 - implementation_summary: `Changed IsObviouslyLosingCapture so quiescence keeps high-value-attacker captures of lower-value pieces unless the target square is defended by the opponent; promotions and non-captures remain unpruned by this helper.`
-- evaluation_log_path: `<n/a>`
+- evaluation_log_path: `autoresearch/approved_logs/V4_5Engine-v4_5-0620160421-result.csv`
 - wins/draws/losses: `318/170/512`
 - score: `403.0`
 - score_rate: `0.4030`
+- improvement_lcb95: `0.0774`
 - average_plies: `96.5110`
 - average_processing_time_ms: `101.3519`
 - average_positions_or_nodes: `7370.5555`
-- inferred_conclusion: `Rejected: making the quiescence losing-capture filter defender-aware produced a large raw improvement over the v4.0 stockfish-1800 reference baseline (score_rate 0.4030 vs 0.2340), with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0360, but lcb95=0.3796 remained below the required 0.5 threshold. The hypothesis appears materially useful and should be considered a strong tactical-search signal for future V4 work, but it is not sufficient alone; future attempts should combine this defender-aware quiescence filter with additional move-quality or tactical-search improvements rather than treating it as an approved standalone seed.`
+- inferred_conclusion: `Approved under the improvement-bound rule against the advancing v4.1 reference: the defender-aware quiescence losing-capture filter raised score_rate from 0.2945 to 0.4030 with improvement_lcb95=0.0774, zero failures, and acceptable max_plies_rate=0.0360. This is the strongest standalone V4 signal so far and should be preserved as a seed idea for future tactical-search work.`
 
 ## Attempt: 2026-06-20T16:43:26Z - v4.6
 
-- status: `rejected`
-- commit: `<n/a>`
+- status: `approved`
+- commit: `04caa13`
 - evaluator_baseline: `stockfish-1800`
 - seed_version: `v4.0`
 - seed_file: `engine_csharp/src/Engine.Core/V4/V4_0Engine.cs`
@@ -815,11 +820,12 @@ Use this exact structure for each appended attempt:
   - `Keeping the v4.5 defender-aware quiescence capture filter should recover material-winning captures that the older high-attacker-value filter pruned too broadly.`
   - `Protecting quiet checking moves from shallow quiet futility pruning and late-move reduction, with a one-ply extension only at remaining depths up to 2, should improve tactical horizon coverage while keeping the existing pruning stack bounded.`
 - implementation_summary: `Changed quiescence losing-capture pruning to skip high-attacker-value captures only when the destination is opponent-defended. Added MoveGivesCheck and quiet-check-aware negamax handling: quiet checking moves are preserved from shallow quiet futility pruning, excluded from late-move reduction, and receive a one-ply shallow extension. Quiet move status is captured before MakeMove so late-move reduction uses the intended pre-move classification.`
-- evaluation_log_path: `<n/a>`
+- evaluation_log_path: `autoresearch/approved_logs/V4_6Engine-v4_6-0620162528-result.csv`
 - wins/draws/losses: `370/179/451`
 - score: `459.5`
 - score_rate: `0.4595`
+- improvement_lcb95: `0.0226`
 - average_plies: `97.1440`
 - average_processing_time_ms: `101.4047`
 - average_positions_or_nodes: `6531.9059`
-- inferred_conclusion: `Rejected: combining the v4.5 defender-aware quiescence capture filter with quiet-check futility/LMR protection and a shallow quiet-check extension produced another large improvement over the v4.0 stockfish-1800 reference baseline (score_rate 0.4595 vs 0.2340), with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0360, but lcb95=0.4350 remained below the 0.5 approval threshold. The result suggests the tactical-search direction is materially useful and stacks with the defender-aware capture filter, but still needs a larger move-quality gain; future V4 attempts should preserve the defender-aware quiescence idea and consider broader but guarded tactical extensions or more selective quiescence/check handling rather than adding generic static evaluation terms.`
+- inferred_conclusion: `Approved under the improvement-bound rule against the advancing v4.5 reference: combining the defender-aware quiescence filter with quiet-check protection and a bounded shallow extension raised score_rate from 0.4030 to 0.4595 with improvement_lcb95=0.0226, zero failures, and acceptable max_plies_rate=0.0360. This is the best V4 result so far; future experiments should build from v4.6 and continue with guarded tactical-search improvements rather than generic static evaluation additions.`
