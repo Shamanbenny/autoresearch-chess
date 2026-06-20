@@ -188,6 +188,7 @@ def main() -> int:
             codex_session = run_codex_implementation(
                 state,
                 candidate,
+                codex_bin=args.codex_bin,
                 soc_cc_enabled=args.soc_cc,
                 soc_cc_config=soc_cc,
                 experiment_log_start_line=experiment_log_start_line,
@@ -376,6 +377,13 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Override evaluator worker count, ignoring state.json for workers. "
             "When omitted, defaults to 12 in SOC CC mode or state.json otherwise."
+        ),
+    )
+    parser.add_argument(
+        "--codex-bin",
+        help=(
+            "Override the Codex CLI binary used by the Python SDK. "
+            "Use this to force autoresearch onto the same installed `codex` binary as your shell."
         ),
     )
     args = parser.parse_args()
@@ -1088,17 +1096,23 @@ def run_codex_implementation(
     state: dict[str, Any],
     candidate: Candidate,
     *,
+    codex_bin: str | None,
     soc_cc_enabled: bool,
     soc_cc_config: SocCcConfig | None,
     experiment_log_start_line: int,
 ) -> CodexSession:
     try:
-        from openai_codex import Codex, Sandbox
+        from openai_codex import Codex, CodexConfig, Sandbox
     except ImportError as exc:
         raise SystemExit("Install autoresearch/requirements.txt before running Codex.") from exc
 
     log_phase(f"Creating new Codex manager for sandbox {candidate.sandbox_dir.name}.")
-    manager = Codex()
+    resolved_codex_bin = codex_bin or os.environ.get("AUTORESEARCH_CODEX_BIN") or None
+    if resolved_codex_bin:
+        log_phase(f"Using Codex binary override: {resolved_codex_bin}.")
+        manager = Codex(CodexConfig(codex_bin=resolved_codex_bin))
+    else:
+        manager = Codex()
     previous_cwd = Path.cwd()
     os.chdir(candidate.sandbox_dir)
     codex = None

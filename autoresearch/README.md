@@ -55,6 +55,16 @@ Then run the orchestrator from the activated venv:
 python autoresearch/run_autoresearch.py
 ```
 
+If the venv-pinned Codex runtime lags behind your normal `codex` install, point
+autoresearch at the same binary your shell uses:
+
+```bash
+python autoresearch/run_autoresearch.py --codex-bin "$(command -v codex)"
+```
+
+You can also export `AUTORESEARCH_CODEX_BIN` once per shell instead of passing
+`--codex-bin` every run.
+
 The script prepares a fresh ignored `autoresearch-sandbox/V*_*/` directory,
 launches Codex with a generated `PROGRAM.md`, then evaluates and records the
 result after Codex returns. Experiment direction is optional for normal minor
@@ -110,6 +120,11 @@ because they do not use the fixed 500-game contract.
 `--workers <N>` overrides the evaluator worker count and ignores the
 `state.json` worker value for that run. The singular alias `--worker <N>` is also
 accepted.
+
+`--codex-bin <path>` forces the Python SDK to launch a specific Codex CLI
+binary instead of its bundled runtime. This is the preferred workaround when
+the SDK dependency pins an older runtime that does not share auth state cleanly
+with your main Codex installation.
 
 `--soc-cc` enables School of Computing Compute Cluster mode. In this mode:
 
