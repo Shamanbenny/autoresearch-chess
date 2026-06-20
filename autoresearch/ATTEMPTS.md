@@ -1178,3 +1178,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.8864`
 - average_positions_or_nodes: `7301.4332`
 - inferred_conclusion: `Rejected: the queen-present king pawn-shield term reduced score_rate to 0.4720 versus the approved 0.4795 baseline, with improvement_lcb95 -0.0408. The feature did not cause crashes, illegal moves, or excessive max-plies games, but it appears to distort move choice enough to underperform; future attempts should avoid adding generic king-shelter bonuses on top of the current king PST/search mix unless they are tied to concrete attack/line-opening signals.`
+
+## Attempt: 2026-06-20T23:39:28Z - v4.23
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.23`
+- version_bump: `minor`
+- hypotheses:
+  - `Caching the per-node static evaluation used by shallow quiet futility pruning will avoid repeated evaluation work within the same node while preserving pruning thresholds, move ordering, and evaluation semantics.`
+- implementation_summary: `Changed quiet futility pruning to receive the nullable static evaluation by reference and populate it once per node, so later quiet futility checks in the same node reuse the cached evaluation instead of recomputing it.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `391/180/429`
+- score: `481.0`
+- score_rate: `0.4810`
+- average_plies: `95.6370`
+- average_processing_time_ms: `100.9252`
+- average_positions_or_nodes: `7408.1962`
+- inferred_conclusion: `Rejected: per-node quiet-futility static-eval caching was stable and slightly improved raw score_rate to 0.4810 versus the approved 0.4795 reference, but it did not clear the paired confidence gate with improvement_lcb95=-0.0321. Average nodes fell to 7408.20 versus the v4.8 reference, so this cleanup should not be treated as a standalone strength gain; future V4 attempts need a stronger independent move-quality improvement rather than relying on semantics-preserving caching.`
