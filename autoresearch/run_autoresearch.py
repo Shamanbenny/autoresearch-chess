@@ -859,9 +859,19 @@ def error_payload_text(value: Any) -> str:
     if isinstance(value, str):
         return value
     if hasattr(value, "model_dump"):
-        return json.dumps(value.model_dump(by_alias=True, exclude_none=True), sort_keys=True)
+        try:
+            dumped = value.model_dump(by_alias=True, exclude_none=True, mode="json")
+        except TypeError:
+            dumped = value.model_dump(by_alias=True, exclude_none=True)
+        try:
+            return json.dumps(dumped, sort_keys=True)
+        except TypeError:
+            return str(dumped)
     if isinstance(value, dict):
-        return json.dumps(value, sort_keys=True)
+        try:
+            return json.dumps(value, sort_keys=True)
+        except TypeError:
+            return str(value)
     return str(value)
 
 
