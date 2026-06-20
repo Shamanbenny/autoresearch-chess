@@ -1257,6 +1257,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.14",
+      "api_version": "v4_14",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_14Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A modest bishop-pair bonus should improve minor-piece trade and middlegame evaluation decisions on top of v4.8-derived piece activity without adding search overhead or widening quiescence."
+      ],
+      "summary": "Added a 24 centipawn bishop-pair positional bonus for each side when its existing evaluation scan counts at least two bishops.",
+      "implementation_summary": "Added a 24 centipawn bishop-pair positional bonus for each side when its existing evaluation scan counts at least two bishops.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 407,
+          "draws": 156,
+          "losses": 437,
+          "score": 485.0,
+          "score_rate": 0.485,
+          "text": "C# v4.14 scored 485.0/1000 against Stockfish (1800 Elo): 407 wins, 156 draws, 437 losses, score rate 0.4850."
+        }
+      },
+      "limitations": []
     }
   ]
 }
