@@ -779,3 +779,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.7022`
 - average_positions_or_nodes: `6773.7643`
 - inferred_conclusion: `Rejected: preserving and shallow-extending quiet checking moves improved score_rate over the V4.0 stockfish-1800 reference baseline (0.2990 vs 0.2340), with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0460, but lcb95=0.2773 remained far below the required 0.5 threshold. The tactical quiet-check treatment is directionally useful but still much too small against stockfish-1800; future V4 attempts need larger move-quality gains from broader tactical search, evaluation, or selectivity improvements rather than further narrow quiet-check tuning.`
+
+## Attempt: 2026-06-20T16:21:57Z - v4.5
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.0`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_0Engine.cs`
+- candidate_version: `v4.5`
+- version_bump: `minor`
+- hypotheses:
+  - `The current quiescence losing-capture filter is too broad because it skips any non-promotion capture where the attacker is more valuable than the victim, even when the captured piece is loose.`
+  - `Only pruning those high-attacker-value captures when the destination is actually defended by the opponent should recover tactical material wins against stockfish-1800 with a limited node-cost increase.`
+- implementation_summary: `Changed IsObviouslyLosingCapture so quiescence keeps high-value-attacker captures of lower-value pieces unless the target square is defended by the opponent; promotions and non-captures remain unpruned by this helper.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `318/170/512`
+- score: `403.0`
+- score_rate: `0.4030`
+- average_plies: `96.5110`
+- average_processing_time_ms: `101.3519`
+- average_positions_or_nodes: `7370.5555`
+- inferred_conclusion: `Rejected: making the quiescence losing-capture filter defender-aware produced a large raw improvement over the v4.0 stockfish-1800 reference baseline (score_rate 0.4030 vs 0.2340), with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0360, but lcb95=0.3796 remained below the required 0.5 threshold. The hypothesis appears materially useful and should be considered a strong tactical-search signal for future V4 work, but it is not sufficient alone; future attempts should combine this defender-aware quiescence filter with additional move-quality or tactical-search improvements rather than treating it as an approved standalone seed.`
