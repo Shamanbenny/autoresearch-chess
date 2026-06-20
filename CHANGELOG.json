@@ -1443,6 +1443,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.21",
+      "api_version": "v4_21",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_21Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A modest bishop-pair bonus should preserve the directionally positive v4.14 signal while adding no search overhead or quiescence expansion.",
+        "Extending only safe checking captures at the final normal-search ply should improve tactical horizon coverage without repeating the costly quiet-check expansion failures."
+      ],
+      "summary": "Added a 24 centipawn bishop-pair positional bonus for each side and added a one-ply extension for checking captures at remaining depth 1 when the capture is not obviously losing, preserving v4.8-derived quiescence and pruning behavior.",
+      "implementation_summary": "Added a 24 centipawn bishop-pair positional bonus for each side and added a one-ply extension for checking captures at remaining depth 1 when the capture is not obviously losing, preserving v4.8-derived quiescence and pruning behavior.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 377,
+          "draws": 198,
+          "losses": 425,
+          "score": 476.0,
+          "score_rate": 0.476,
+          "text": "C# v4.21 scored 476.0/1000 against Stockfish (1800 Elo): 377 wins, 198 draws, 425 losses, score rate 0.4760."
+        }
+      },
+      "limitations": []
     }
   ]
 }
