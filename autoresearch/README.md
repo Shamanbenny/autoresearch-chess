@@ -107,11 +107,15 @@ non-approving evaluator pass with `N` games to check that the candidate builds,
 the evaluator launches, and CSV parsing works. Smoke results are always rejected
 because they do not use the fixed 500-game contract.
 
+`--workers <N>` overrides the evaluator worker count and ignores the
+`state.json` worker value for that run. The singular alias `--worker <N>` is also
+accepted.
+
 `--soc-cc` enables School of Computing Compute Cluster mode. In this mode:
 
 - the post-attempt KDialog prompt is skipped and the loop auto-continues
 - the evaluator uses a script constant of `12` workers instead of the normal
-  `state.json` value
+  `state.json` value, unless `--workers` or `--worker` is supplied
 - the finalized autoresearch commit is pushed to `origin/<current-branch>` after
   each attempt
 - the script reads a repo-local `.env` file and sends Gmail notifications when
@@ -250,8 +254,10 @@ Stockfish opponent:
   `engine_csharp/src/LocalTesting`
 - no depth argument; the match is time-limited
 
-SOC CC mode overrides the worker count with a script constant of `12` without
-editing `state.json`.
+An explicit `--workers <N>` or `--worker <N>` argument overrides this worker
+count and ignores `state.json` for that run. Without an explicit worker
+argument, SOC CC mode uses a script constant of `12` workers without editing
+`state.json`.
 
 The command shape is:
 

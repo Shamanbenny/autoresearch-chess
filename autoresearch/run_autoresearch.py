@@ -231,6 +231,7 @@ def main() -> int:
                 state,
                 attempt_id,
                 args.smoke_games,
+                args.workers,
                 soc_cc_enabled=args.soc_cc,
             )
             if evaluator_ok and log_path.exists():
@@ -361,7 +362,20 @@ def parse_args() -> argparse.Namespace:
         type=int,
         help="Run a non-approving evaluator smoke test with this game count.",
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--workers",
+        "--worker",
+        dest="workers",
+        type=int,
+        help=(
+            "Override evaluator worker count, ignoring state.json for workers. "
+            "When omitted, defaults to 12 in SOC CC mode or state.json otherwise."
+        ),
+    )
+    args = parser.parse_args()
+    if args.workers is not None and args.workers < 1:
+        parser.error("--workers must be at least 1.")
+    return args
 
 
 def start_text_log() -> None:
@@ -1182,6 +1196,7 @@ def run_evaluator(
     state: dict[str, Any],
     attempt_id: str,
     smoke_games: int | None,
+    worker_override: int | None,
     *,
     soc_cc_enabled: bool,
 ) -> bool:
@@ -1197,7 +1212,12 @@ def run_evaluator(
 
     evaluator = state["evaluator"]
     games = smoke_games or evaluator["games"]
-    workers = SOC_CC_EVALUATOR_WORKERS if soc_cc_enabled else evaluator["workers"]
+    if worker_override is not None:
+        workers = worker_override
+    elif soc_cc_enabled:
+        workers = SOC_CC_EVALUATOR_WORKERS
+    else:
+        workers = evaluator["workers"]
     command = [
         "dotnet",
         "run",
