@@ -919,3 +919,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.9633`
 - average_positions_or_nodes: `6558.3626`
 - inferred_conclusion: `Rejected: the bounded quiet-check move-order bonus reduced score_rate from the approved v4.8 seed's 0.4795 to 0.4475, with improvement_lcb95=-0.0651. Node throughput also fell materially to 6558.36 average positions/nodes versus v4.8's 7542.32, while failures remained zero and max_plies_rate was acceptable at 0.0410. Future V4 work should avoid adding make/unmake-based quiet-check ordering tests across move ordering, even when depth-bounded, because the added overhead appears to reduce effective 100ms search coverage more than the ordering improvement helps.`
+
+## Attempt: 2026-06-20T19:33:32Z - v4.11
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.11`
+- version_bump: `minor`
+- hypotheses:
+  - `Scoring stalemate and already-drawn repetition/50-move nodes as exact draws will improve conversion and drawing defense versus v4.8, because the current search can treat stalemate as a material-winning or material-losing evaluated position instead of a terminal draw.`
+- implementation_summary: `Added exact draw scoring for threefold/50-move positions in main search and quiescence, and changed no-legal-move non-check nodes to return a draw score instead of static evaluation.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `376/181/443`
+- score: `466.5`
+- score_rate: `0.4665`
+- average_plies: `98.6870`
+- average_processing_time_ms: `101.0656`
+- average_positions_or_nodes: `7440.8966`
+- inferred_conclusion: `Rejected: exact terminal draw scoring for repetition/50-move states plus stalemate did not improve over the approved v4.8 seed, scoring 0.4665 versus 0.4795 with improvement_lcb95=-0.0468. The change stayed stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0300, but likely removed some useful draw-contempt behavior or had too little positive impact to offset changed endgame choices. Future V4 work should preserve v4.8's practical draw-adjustment behavior and focus on lower-cost tactical search or ordering improvements rather than broad exact draw normalization.`
