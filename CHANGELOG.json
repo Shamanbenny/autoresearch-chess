@@ -1231,6 +1231,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.13",
+      "api_version": "v4_13",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_13Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Allowing immediate non-capture pawn promotions in quiescence should fix a narrow horizon blind spot without repeating the expensive broad quiet-check expansion from v4.7."
+      ],
+      "summary": "Changed pawn move generation so capture-only/quiescence move lists still include one-square promotion pushes when the promotion square is empty, while preserving the existing exclusion of ordinary quiet pawn pushes and double pushes.",
+      "implementation_summary": "Changed pawn move generation so capture-only/quiescence move lists still include one-square promotion pushes when the promotion square is empty, while preserving the existing exclusion of ordinary quiet pawn pushes and double pushes.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 391,
+          "draws": 166,
+          "losses": 443,
+          "score": 474.0,
+          "score_rate": 0.474,
+          "text": "C# v4.13 scored 474.0/1000 against Stockfish (1800 Elo): 391 wins, 166 draws, 443 losses, score rate 0.4740."
+        }
+      },
+      "limitations": []
     }
   ]
 }
