@@ -713,3 +713,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.5131`
 - average_positions_or_nodes: `6567.6910`
 - inferred_conclusion: `Rejected: exempting quiet checking moves from shallow futility pruning and late-move reduction improved score_rate from the V4.0 stockfish-1800 calibration baseline of 0.2340 to 0.2945, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0470, but lcb95=0.2740 remained far below the required 0.5 approval threshold. The hypothesis appears directionally useful for tactical coverage against the stronger baseline, but it is not nearly sufficient on its own; future V4 experiments should preserve this idea only if combined with larger move-quality gains, likely from stronger tactical search/selectivity or evaluation changes rather than another narrow pruning exemption.`
+
+## Attempt: 2026-06-20T15:18:21Z - v4.2
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.0`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_0Engine.cs`
+- candidate_version: `v4.2`
+- version_bump: `minor`
+- hypotheses:
+  - `A very small queen mobility term will improve queen activity and attacking move choice on top of v4.2's existing targeted piece-activity features.`
+  - `Reusing the existing ray-mobility helper with a 1 centipawn per reachable queen square scale should keep evaluation overhead low enough for 100ms searches.`
+- implementation_summary: `Added a QueenMobilityScale constant and scored queen ray mobility in evaluation using the existing bishop/rook ray mobility helper paths.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `194/190/616`
+- score: `289.0`
+- score_rate: `0.2890`
+- average_plies: `101.8110`
+- average_processing_time_ms: `100.9776`
+- average_positions_or_nodes: `7098.9991`
+- inferred_conclusion: `The tiny queen-mobility term was not a viable improvement: although raw score_rate rose above the previously approved reference score_rate, lcb95 remained far below the 0.5 approval threshold and losses were heavy. Future attempts should avoid adding generic queen activity scoring on this v4.2 base and instead target larger tactical/search-quality issues or concrete conversion failures with evidence that they can materially improve paired outcomes.`
