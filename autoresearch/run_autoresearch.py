@@ -73,8 +73,17 @@ class EvaluationMetrics:
     failure_counts: dict[str, int]
     pair_mean: float
     pair_sd: float
+    pair_count: int
     lcb95: float
     games: int
+
+
+@dataclass(frozen=True)
+class ReferenceMetrics:
+    score_rate: float
+    pair_sd: float
+    pair_count: int
+    source: Path
 
 
 class CodexTurnTimeoutError(RuntimeError):
@@ -250,7 +259,7 @@ def main() -> int:
                 if args.smoke_games is not None:
                     status = "rejected"
                     verdict_reason = (
-                        "Rejected because this was an explicit smoke run, not the fixed 500-game approval run."
+                        "Rejected because this was an explicit smoke run, not the fixed 1000-game approval run."
                     )
                 if status == "approved":
                     approved_log_path = move_approved_log(candidate, log_path, attempt_id)
@@ -773,7 +782,8 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
         - max_plies: `{evaluator['max_plies']}`
 
         A candidate is approved only if it builds, has no evaluator failures,
-        has `score_rate` greater than the latest approved score rate, has `lcb95 > 0.5`,
+        has `score_rate` greater than the latest approved score rate, has a positive
+        one-sided 95% lower confidence bound on improvement over the latest approved reference,
         and has `max_plies_rate < 0.10`.
 
         A later prompt will include the evaluation result in this same Codex session.
@@ -809,6 +819,9 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
         Therefore:
         - `score_rate = total_score / games`
         - `approved_seed_score_rate = the latest approved seed's recorded reference score rate against the current evaluator baseline from autoresearch/state.json`
+        - `improvement_lcb95 = (candidate_score_rate - approved_seed_score_rate) - t * sqrt(candidate_pair_sd^2 / candidate_pairs + approved_pair_sd^2 / approved_pairs)`
+
+        Approval requires `improvement_lcb95 > 0`, not `candidate_lcb95 > 0.5`.
         """
     )
     return program
@@ -1349,6 +1362,7 @@ def parse_evaluation_csv(path: Path, state: dict[str, Any]) -> EvaluationMetrics
         failure_counts=failure_counts,
         pair_mean=pair_mean,
         pair_sd=pair_sd,
+        pair_count=len(pair_values),
         lcb95=lcb95,
         games=games,
     )
@@ -1384,21 +1398,68 @@ def require_latest_approved_reference_score(state: dict[str, Any]) -> float:
     return score
 
 
+def require_latest_approved_reference_metrics(state: dict[str, Any]) -> ReferenceMetrics:
+    require_latest_approved_reference_score(state)
+    latest = state["latest_approved"]
+    source_value = str(latest.get("approved_reference_score_source", "")).strip()
+    if not source_value or source_value == "<pending>":
+        raise SystemExit("Latest approved seed has no finalized approved_reference_score_source.")
+
+    source = Path(source_value)
+    if not source.is_absolute():
+        source = REPO_ROOT / source
+    if not source.exists():
+        raise SystemExit(f"Latest approved reference CSV does not exist: {source}")
+
+    pair_values = pair_values_from_csv(source)
+    pair_mean = sum(pair_values) / len(pair_values)
+    return ReferenceMetrics(
+        score_rate=pair_mean,
+        pair_sd=sample_sd(pair_values, pair_mean),
+        pair_count=len(pair_values),
+        source=source,
+    )
+
+
+def pair_values_from_csv(path: Path) -> list[float]:
+    with path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    if not rows:
+        raise SystemExit(f"Reference CSV is empty: {path}")
+
+    pair_scores: dict[int, float] = {}
+    for row in rows:
+        pair = int(row["pair_number"])
+        pair_scores[pair] = pair_scores.get(pair, 0.0) + float(row["engine_a_score"]) / 2.0
+    return list(pair_scores.values())
+
+
+def improvement_lcb95(metrics: EvaluationMetrics, reference: ReferenceMetrics, state: dict[str, Any]) -> float:
+    df = min(metrics.pair_count, reference.pair_count) - 1
+    t_critical = state["evaluator"]["approval"]["t_critical_one_sided_95_by_df"].get(str(df), 1.650996)
+    standard_error = math.sqrt(
+        (metrics.pair_sd * metrics.pair_sd / metrics.pair_count)
+        + (reference.pair_sd * reference.pair_sd / reference.pair_count)
+    )
+    return (metrics.score_rate - reference.score_rate) - t_critical * standard_error
+
+
 def decide_candidate(metrics: EvaluationMetrics, state: dict[str, Any]) -> tuple[str, str]:
-    approved_score = require_latest_approved_reference_score(state)
+    reference = require_latest_approved_reference_metrics(state)
     approval = state["evaluator"]["approval"]
     failures = sum(metrics.failure_counts[key] for key in ("crash", "illegal_move", "timeout", "harness"))
     if failures > 0:
         return "rejected", "Rejected because evaluator failures were recorded."
-    if metrics.score_rate <= approved_score:
-        return "rejected", f"Rejected because score_rate={metrics.score_rate:.4f} did not exceed approved seed {approved_score:.4f}."
-    if metrics.lcb95 <= approval["lcb95_min_exclusive"]:
-        return "rejected", f"Rejected because lcb95={metrics.lcb95:.4f} did not exceed 0.5."
+    if metrics.score_rate <= reference.score_rate:
+        return "rejected", f"Rejected because score_rate={metrics.score_rate:.4f} did not exceed approved seed {reference.score_rate:.4f}."
+    improvement_lcb = improvement_lcb95(metrics, reference, state)
+    if improvement_lcb <= approval["improvement_lcb95_min_exclusive"]:
+        return "rejected", f"Rejected because improvement_lcb95={improvement_lcb:.4f} did not exceed 0."
     if metrics.max_plies_rate >= approval["max_plies_rate_max_exclusive"]:
         return "rejected", f"Rejected because max_plies_rate={metrics.max_plies_rate:.4f} was at least 0.10."
     return "approved", (
-        f"Approved because score_rate={metrics.score_rate:.4f} exceeded {approved_score:.4f}, "
-        f"lcb95={metrics.lcb95:.4f} > 0.5, max_plies_rate={metrics.max_plies_rate:.4f} < 0.10, and failures=0."
+        f"Approved because score_rate={metrics.score_rate:.4f} exceeded {reference.score_rate:.4f}, "
+        f"improvement_lcb95={improvement_lcb:.4f} > 0, max_plies_rate={metrics.max_plies_rate:.4f} < 0.10, and failures=0."
     )
 
 
@@ -1458,13 +1519,16 @@ def build_evaluation_summary(
             """
         )
 
+    reference = require_latest_approved_reference_metrics(state)
+    improvement_lcb = improvement_lcb95(metrics, reference, state)
     return textwrap.dedent(
         f"""\
         Candidate version: {candidate.version}
         Approval status: {status}
-        Previously approved score_rate: {approved_score:.4f}
+        Previously approved score_rate: {reference.score_rate:.4f}
         Candidate score_rate: {metrics.score_rate:.4f}
         Candidate lcb95: {metrics.lcb95:.4f}
+        Candidate improvement_lcb95: {improvement_lcb:.4f}
         Candidate max_plies_rate: {metrics.max_plies_rate:.4f}
         Wins/draws/losses: {metrics.wins}/{metrics.draws}/{metrics.losses}
         Average plies: {metrics.average_plies:.2f}
@@ -1542,6 +1606,7 @@ def metrics_to_dict(metrics: EvaluationMetrics | None) -> dict[str, Any]:
         "failure_counts": metrics.failure_counts,
         "pair_mean": metrics.pair_mean,
         "pair_sd": metrics.pair_sd,
+        "pair_count": metrics.pair_count,
         "lcb95": metrics.lcb95,
         "games": metrics.games,
     }

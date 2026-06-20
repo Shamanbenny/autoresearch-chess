@@ -8,10 +8,11 @@
     "max_plies": 200,
     "workers": 6,
     "approval": {
-      "lcb95_min_exclusive": 0.5,
+      "improvement_lcb95_min_exclusive": 0.0,
       "max_plies_rate_max_exclusive": 0.1,
       "t_critical_one_sided_95_by_df": {
-        "249": 1.650996
+        "249": 1.650996,
+        "499": 1.647913
       }
     }
   },

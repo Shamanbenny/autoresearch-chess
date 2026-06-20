@@ -115,7 +115,7 @@ continue loop.
 `--smoke-games <N>` is only a script-development diagnostic. It runs a short,
 non-approving evaluator pass with `N` games to check that the candidate builds,
 the evaluator launches, and CSV parsing works. Smoke results are always rejected
-because they do not use the fixed 500-game contract.
+because they do not use the fixed 1000-game approval contract.
 
 `--workers <N>` overrides the evaluator worker count and ignores the
 `state.json` worker value for that run. The singular alias `--worker <N>` is also
@@ -361,7 +361,7 @@ A candidate is approved only when all of these are true:
 - the evaluator completes and writes the canonical CSV
 - the candidate records no crash, illegal move, timeout, or harness failure
 - `score_rate > latest_approved.approved_reference_score_rate_vs_current_baseline`
-- `lcb95 > 0.5`
+- `improvement_lcb95 > 0`
 - `max_plies_rate < 0.10`
 
 Otherwise the candidate is rejected.
@@ -383,8 +383,21 @@ lcb95 = mean - t_(0.95, n-1) * sd / sqrt(n)
 score_rate = total_score / games
 ```
 
-For the standard 500-game run, `state.json` records the one-sided 95%
-Student-t critical value for `df = 249`.
+Candidate approval uses a lower confidence bound on improvement over the latest
+approved reference against the same evaluator baseline:
+
+```text
+improvement_lcb95 =
+  (candidate_score_rate - approved_reference_score_rate)
+  - t * sqrt(candidate_pair_sd^2 / candidate_pairs + approved_pair_sd^2 / approved_pairs)
+```
+
+The candidate clears the confidence gate when `improvement_lcb95 > 0`. This is
+an improvement-over-seed test, not a requirement that the candidate itself have
+`lcb95 > 0.5` against Stockfish.
+
+For the standard 1000-game run, `state.json` records one-sided 95% Student-t
+critical values for the relevant paired-result degrees of freedom.
 
 ## Attempt Recording
 
