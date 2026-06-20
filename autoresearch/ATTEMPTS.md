@@ -1068,3 +1068,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.8832`
 - average_positions_or_nodes: `7409.8898`
 - inferred_conclusion: `Rejected: caching the pawns-and-king-only guard alongside static evaluation reduced score_rate from the approved v4.8 seed's 0.4795 to 0.4615 with improvement_lcb95=-0.0509. The change stayed stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0390, but average nodes fell to 7409.89 versus v4.8's 7542.32 and move quality regressed. Future V4 experiments should avoid further semantics-preserving guard/evaluation caching in this path unless compile-time profiling identifies a clear hotspot; prioritize tactical search or ordering changes with direct move-quality impact.`
+
+## Attempt: 2026-06-20T21:57:25Z - v4.18
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.18`
+- version_bump: `minor`
+- hypotheses:
+  - `Caching the per-node static evaluation used by shallow quiet futility pruning will avoid repeated evaluation work within the same node while preserving pruning thresholds and move semantics.`
+  - `Combining that low-risk budget cleanup with the previously directionally positive 24 centipawn bishop-pair evaluation term may provide enough independent move-quality signal to improve over the v4.8 reference.`
+- implementation_summary: `Changed quiet futility pruning to populate the nullable static evaluation by reference so later quiet futility checks in the same node reuse it, and added a 24 centipawn bishop-pair positional bonus for each side when the existing evaluation scan counts at least two bishops.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `410/163/427`
+- score: `491.5`
+- score_rate: `0.4915`
+- average_plies: `95.5360`
+- average_processing_time_ms: `100.7331`
+- average_positions_or_nodes: `7397.5725`
+- inferred_conclusion: `Rejected: combining per-node quiet-futility static-eval caching with the 24 centipawn bishop-pair bonus improved raw score_rate to 0.4915 versus the approved v4.8 reference at 0.4795, but did not clear the paired confidence gate with improvement_lcb95=-0.0214. The run was stable with zero crash/illegal/timeout/harness failures and max_plies_rate=0.0300, but average nodes fell to 7397.57 versus v4.8's 7542.32. Future work may treat this combination as a directionally positive signal, but it is still not strong enough as a standalone successor; prioritize changes that preserve or improve throughput while adding clearer tactical move-quality impact rather than stacking small static evaluation and caching tweaks.`

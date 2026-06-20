@@ -1362,6 +1362,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.18",
+      "api_version": "v4_18",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_18Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Caching the per-node static evaluation used by shallow quiet futility pruning will avoid repeated evaluation work within the same node while preserving pruning thresholds and move semantics.",
+        "Combining that low-risk budget cleanup with the previously directionally positive 24 centipawn bishop-pair evaluation term may provide enough independent move-quality signal to improve over the v4.8 reference."
+      ],
+      "summary": "Changed quiet futility pruning to populate the nullable static evaluation by reference so later quiet futility checks in the same node reuse it, and added a 24 centipawn bishop-pair positional bonus for each side when the existing evaluation scan counts at least two bishops.",
+      "implementation_summary": "Changed quiet futility pruning to populate the nullable static evaluation by reference so later quiet futility checks in the same node reuse it, and added a 24 centipawn bishop-pair positional bonus for each side when the existing evaluation scan counts at least two bishops.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 410,
+          "draws": 163,
+          "losses": 427,
+          "score": 491.5,
+          "score_rate": 0.4915,
+          "text": "C# v4.18 scored 491.5/1000 against Stockfish (1800 Elo): 410 wins, 163 draws, 427 losses, score rate 0.4915."
+        }
+      },
+      "limitations": []
     }
   ]
 }
