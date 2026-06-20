@@ -1204,6 +1204,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.12",
+      "api_version": "v4_12",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_12Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A cheap king-race bonus for advanced passed pawns in endgames will improve conversion decisions on top of v4.8 without expanding quiescence or adding broad move-order overhead.",
+        "Restricting the passed-pawn blockade penalty to defended enemy blockaders should avoid undervaluing passers blocked by loose pieces that may be tactically removable."
+      ],
+      "summary": "Added a small endgame-weighted passed-pawn race bonus when the enemy king is too far from the promotion square, and changed the existing direct-front blockade penalty to apply only when the enemy blockader is defended.",
+      "implementation_summary": "Added a small endgame-weighted passed-pawn race bonus when the enemy king is too far from the promotion square, and changed the existing direct-front blockade penalty to apply only when the enemy blockader is defended.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 372,
+          "draws": 193,
+          "losses": 435,
+          "score": 468.5,
+          "score_rate": 0.4685,
+          "text": "C# v4.12 scored 468.5/1000 against Stockfish (1800 Elo): 372 wins, 193 draws, 435 losses, score rate 0.4685."
+        }
+      },
+      "limitations": []
     }
   ]
 }

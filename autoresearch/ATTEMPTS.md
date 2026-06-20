@@ -940,3 +940,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.0656`
 - average_positions_or_nodes: `7440.8966`
 - inferred_conclusion: `Rejected: exact terminal draw scoring for repetition/50-move states plus stalemate did not improve over the approved v4.8 seed, scoring 0.4665 versus 0.4795 with improvement_lcb95=-0.0468. The change stayed stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0300, but likely removed some useful draw-contempt behavior or had too little positive impact to offset changed endgame choices. Future V4 work should preserve v4.8's practical draw-adjustment behavior and focus on lower-cost tactical search or ordering improvements rather than broad exact draw normalization.`
+
+## Attempt: 2026-06-20T19:54:15Z - v4.12
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.12`
+- version_bump: `minor`
+- hypotheses:
+  - `A cheap king-race bonus for advanced passed pawns in endgames will improve conversion decisions on top of v4.8 without expanding quiescence or adding broad move-order overhead.`
+  - `Restricting the passed-pawn blockade penalty to defended enemy blockaders should avoid undervaluing passers blocked by loose pieces that may be tactically removable.`
+- implementation_summary: `Added a small endgame-weighted passed-pawn race bonus when the enemy king is too far from the promotion square, and changed the existing direct-front blockade penalty to apply only when the enemy blockader is defended.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `372/193/435`
+- score: `468.5`
+- score_rate: `0.4685`
+- average_plies: `96.7030`
+- average_processing_time_ms: `101.0557`
+- average_positions_or_nodes: `7313.0888`
+- inferred_conclusion: `Rejected: the passed-pawn king-race bonus plus defended-blockader refinement scored 0.4685 versus the approved v4.8 reference 0.4795, with improvement_lcb95=-0.0439. The change was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0440, but reduced score and node throughput from v4.8's 7542.32 to 7313.09 average positions/nodes. Future V4 work should not add further endgame passed-pawn tuning on this path unless it is more selective or backed by tactical search support; preserve v4.8's practical quiescence/search behavior and look for lower-cost improvements with clearer tactical impact.`
