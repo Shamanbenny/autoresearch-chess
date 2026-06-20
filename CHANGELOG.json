@@ -1336,6 +1336,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.17",
+      "api_version": "v4_17",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_17Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Caching per-node static evaluation and the pawns-and-king-only guard across reverse futility, null-move gating, and quiet futility should recover 100ms search budget without changing pruning thresholds or evaluation semantics."
+      ],
+      "summary": "Negamax now keeps a nullable per-node only-pawns-and-king result alongside the existing nullable static evaluation. Reverse futility pruning, null-move pruning, and quiet futility pruning reuse those cached values; quiet futility now populates staticEval by reference so later quiet moves in the same node avoid recomputing evaluation.",
+      "implementation_summary": "Negamax now keeps a nullable per-node only-pawns-and-king result alongside the existing nullable static evaluation. Reverse futility pruning, null-move pruning, and quiet futility pruning reuse those cached values; quiet futility now populates staticEval by reference so later quiet moves in the same node avoid recomputing evaluation.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 368,
+          "draws": 187,
+          "losses": 445,
+          "score": 461.5,
+          "score_rate": 0.4615,
+          "text": "C# v4.17 scored 461.5/1000 against Stockfish (1800 Elo): 368 wins, 187 draws, 445 losses, score rate 0.4615."
+        }
+      },
+      "limitations": []
     }
   ]
 }

@@ -1047,3 +1047,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.9391`
 - average_positions_or_nodes: `7511.0359`
 - inferred_conclusion: `Rejected: caching the per-node static evaluation for quiet futility pruning was stable and directionally positive on raw score_rate, improving from v4.8's 0.4795 reference to 0.4840 with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0380. However, it did not clear the paired confidence gate with improvement_lcb95=-0.0293, and average nodes slightly declined to 7511.04 versus v4.8's 7542.32. Future work may preserve this as a low-risk cleanup only if combined with a stronger independent improvement, but it should not be treated as a standalone approved strength gain.`
+
+## Attempt: 2026-06-20T21:37:01Z - v4.17
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.17`
+- version_bump: `minor`
+- hypotheses:
+  - `Caching per-node static evaluation and the pawns-and-king-only guard across reverse futility, null-move gating, and quiet futility should recover 100ms search budget without changing pruning thresholds or evaluation semantics.`
+- implementation_summary: `Negamax now keeps a nullable per-node only-pawns-and-king result alongside the existing nullable static evaluation. Reverse futility pruning, null-move pruning, and quiet futility pruning reuse those cached values; quiet futility now populates staticEval by reference so later quiet moves in the same node avoid recomputing evaluation.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `368/187/445`
+- score: `461.5`
+- score_rate: `0.4615`
+- average_plies: `97.9920`
+- average_processing_time_ms: `100.8832`
+- average_positions_or_nodes: `7409.8898`
+- inferred_conclusion: `Rejected: caching the pawns-and-king-only guard alongside static evaluation reduced score_rate from the approved v4.8 seed's 0.4795 to 0.4615 with improvement_lcb95=-0.0509. The change stayed stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0390, but average nodes fell to 7409.89 versus v4.8's 7542.32 and move quality regressed. Future V4 experiments should avoid further semantics-preserving guard/evaluation caching in this path unless compile-time profiling identifies a clear hotspot; prioritize tactical search or ordering changes with direct move-quality impact.`
