@@ -940,6 +940,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.6",
+      "api_version": "v4_6",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_6Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Keeping the v4.5 defender-aware quiescence capture filter should recover material-winning captures that the older high-attacker-value filter pruned too broadly.",
+        "Protecting quiet checking moves from shallow quiet futility pruning and late-move reduction, with a one-ply extension only at remaining depths up to 2, should improve tactical horizon coverage while keeping the existing pruning stack bounded."
+      ],
+      "summary": "Changed quiescence losing-capture pruning to skip high-attacker-value captures only when the destination is opponent-defended. Added MoveGivesCheck and quiet-check-aware negamax handling: quiet checking moves are preserved from shallow quiet futility pruning, excluded from late-move reduction, and receive a one-ply shallow extension. Quiet move status is captured before MakeMove so late-move reduction uses the intended pre-move classification.",
+      "implementation_summary": "Changed quiescence losing-capture pruning to skip high-attacker-value captures only when the destination is opponent-defended. Added MoveGivesCheck and quiet-check-aware negamax handling: quiet checking moves are preserved from shallow quiet futility pruning, excluded from late-move reduction, and receive a one-ply shallow extension. Quiet move status is captured before MakeMove so late-move reduction uses the intended pre-move classification.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 370,
+          "draws": 179,
+          "losses": 451,
+          "score": 459.5,
+          "score_rate": 0.4595,
+          "text": "C# v4.6 scored 459.5/1000 against Stockfish (1800 Elo): 370 wins, 179 draws, 451 losses, score rate 0.4595."
+        }
+      },
+      "limitations": []
     }
   ]
 }

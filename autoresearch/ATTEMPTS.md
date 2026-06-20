@@ -801,3 +801,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.3519`
 - average_positions_or_nodes: `7370.5555`
 - inferred_conclusion: `Rejected: making the quiescence losing-capture filter defender-aware produced a large raw improvement over the v4.0 stockfish-1800 reference baseline (score_rate 0.4030 vs 0.2340), with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0360, but lcb95=0.3796 remained below the required 0.5 threshold. The hypothesis appears materially useful and should be considered a strong tactical-search signal for future V4 work, but it is not sufficient alone; future attempts should combine this defender-aware quiescence filter with additional move-quality or tactical-search improvements rather than treating it as an approved standalone seed.`
+
+## Attempt: 2026-06-20T16:43:26Z - v4.6
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.0`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_0Engine.cs`
+- candidate_version: `v4.6`
+- version_bump: `minor`
+- hypotheses:
+  - `Keeping the v4.5 defender-aware quiescence capture filter should recover material-winning captures that the older high-attacker-value filter pruned too broadly.`
+  - `Protecting quiet checking moves from shallow quiet futility pruning and late-move reduction, with a one-ply extension only at remaining depths up to 2, should improve tactical horizon coverage while keeping the existing pruning stack bounded.`
+- implementation_summary: `Changed quiescence losing-capture pruning to skip high-attacker-value captures only when the destination is opponent-defended. Added MoveGivesCheck and quiet-check-aware negamax handling: quiet checking moves are preserved from shallow quiet futility pruning, excluded from late-move reduction, and receive a one-ply shallow extension. Quiet move status is captured before MakeMove so late-move reduction uses the intended pre-move classification.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `370/179/451`
+- score: `459.5`
+- score_rate: `0.4595`
+- average_plies: `97.1440`
+- average_processing_time_ms: `101.4047`
+- average_positions_or_nodes: `6531.9059`
+- inferred_conclusion: `Rejected: combining the v4.5 defender-aware quiescence capture filter with quiet-check futility/LMR protection and a shallow quiet-check extension produced another large improvement over the v4.0 stockfish-1800 reference baseline (score_rate 0.4595 vs 0.2340), with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0360, but lcb95=0.4350 remained below the 0.5 approval threshold. The result suggests the tactical-search direction is materially useful and stacks with the defender-aware capture filter, but still needs a larger move-quality gain; future V4 attempts should preserve the defender-aware quiescence idea and consider broader but guarded tactical extensions or more selective quiescence/check handling rather than adding generic static evaluation terms.`
