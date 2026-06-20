@@ -690,3 +690,26 @@ Use this exact structure for each appended attempt:
 - lcb95: `0.2150`
 - failures: `0`
 - note: `This calibrates the latest approved seed against the current stockfish-1800 evaluator baseline. Future candidates compare score_rate against 0.2340 until a newer engine is approved under the same baseline.`
+
+
+## Attempt: 2026-06-20T14:57:41Z - v4.1
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.0`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_0Engine.cs`
+- candidate_version: `v4.1`
+- version_bump: `minor`
+- hypotheses:
+  - `Quiet checking moves are tactically important enough that they should not be pruned by shallow quiet futility pruning or reduced by late-move reduction merely because they appear late in move ordering.`
+  - `Exempting only quiet moves that give check should improve tactical coverage against stockfish-1800 while preserving the existing V4.0 evaluation, null-move, futility, killer, and quiet-history behavior for ordinary quiet moves.`
+- implementation_summary: `Added a NativeBoard.MoveGivesCheck helper and used it to keep quiet checking moves out of shallow quiet futility pruning. Negamax now detects whether a searched move gives check after making it, and late-move reduction skips those checking moves while leaving the existing reduction policy unchanged for non-checking quiet moves.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `191/207/602`
+- score: `294.5`
+- score_rate: `0.2945`
+- average_plies: `100.8760`
+- average_processing_time_ms: `101.5131`
+- average_positions_or_nodes: `6567.6910`
+- inferred_conclusion: `Rejected: exempting quiet checking moves from shallow futility pruning and late-move reduction improved score_rate from the V4.0 stockfish-1800 calibration baseline of 0.2340 to 0.2945, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0470, but lcb95=0.2740 remained far below the required 0.5 approval threshold. The hypothesis appears directionally useful for tactical coverage against the stronger baseline, but it is not nearly sufficient on its own; future V4 experiments should preserve this idea only if combined with larger move-quality gains, likely from stronger tactical search/selectivity or evaluation changes rather than another narrow pruning exemption.`

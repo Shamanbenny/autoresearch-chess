@@ -805,6 +805,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.1",
+      "api_version": "v4_1",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_1Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Quiet checking moves are tactically important enough that they should not be pruned by shallow quiet futility pruning or reduced by late-move reduction merely because they appear late in move ordering.",
+        "Exempting only quiet moves that give check should improve tactical coverage against stockfish-1800 while preserving the existing V4.0 evaluation, null-move, futility, killer, and quiet-history behavior for ordinary quiet moves."
+      ],
+      "summary": "Added a NativeBoard.MoveGivesCheck helper and used it to keep quiet checking moves out of shallow quiet futility pruning. Negamax now detects whether a searched move gives check after making it, and late-move reduction skips those checking moves while leaving the existing reduction policy unchanged for non-checking quiet moves.",
+      "implementation_summary": "Added a NativeBoard.MoveGivesCheck helper and used it to keep quiet checking moves out of shallow quiet futility pruning. Negamax now detects whether a searched move gives check after making it, and late-move reduction skips those checking moves while leaving the existing reduction policy unchanged for non-checking quiet moves.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 191,
+          "draws": 207,
+          "losses": 602,
+          "score": 294.5,
+          "score_rate": 0.2945,
+          "text": "C# v4.1 scored 294.5/1000 against Stockfish (1800 Elo): 191 wins, 207 draws, 602 losses, score rate 0.2945."
+        }
+      },
+      "limitations": []
     }
   ]
 }
