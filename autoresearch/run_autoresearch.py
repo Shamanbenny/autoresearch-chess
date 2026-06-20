@@ -35,7 +35,13 @@ SOC_CC_EVALUATOR_WORKERS = 12
 SOC_CC_SMTP_HOST = "smtp.gmail.com"
 SOC_CC_SMTP_PORT = 465
 CURRENT_TEXT_LOG: Path | None = None
-DEFAULT_STOCKFISH_PATH = REPO_ROOT / "autoresearch" / "stockfish" / "stockfish-ubuntu-x86-64-avx2"
+DEFAULT_STOCKFISH_PATH = (
+    REPO_ROOT
+    / "autoresearch"
+    / "stockfish"
+    / "stockfish"
+    / "stockfish-ubuntu-x86-64-avx2"
+)
 
 
 @dataclass(frozen=True)
@@ -1204,7 +1210,7 @@ def run_evaluator(
     if stockfish_path is None:
         emit_console(
             "Stockfish binary not found at "
-            "autoresearch/stockfish/stockfish-ubuntu-x86-64-avx2.\n",
+            "autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2.\n",
             stream=sys.stderr,
             flush=True,
         )
