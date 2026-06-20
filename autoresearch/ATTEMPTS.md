@@ -735,3 +735,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.9776`
 - average_positions_or_nodes: `7098.9991`
 - inferred_conclusion: `The tiny queen-mobility term was not a viable improvement: although raw score_rate rose above the previously approved reference score_rate, lcb95 remained far below the 0.5 approval threshold and losses were heavy. Future attempts should avoid adding generic queen activity scoring on this v4.2 base and instead target larger tactical/search-quality issues or concrete conversion failures with evidence that they can materially improve paired outcomes.`
+
+## Attempt: 2026-06-20T15:39:29Z - v4.3
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.0`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_0Engine.cs`
+- candidate_version: `v4.3`
+- version_bump: `minor`
+- hypotheses:
+  - `Quiet checking moves are tactically important enough that shallow quiet futility pruning should not discard them before search.`
+  - `Skipping late-move reduction for quiet checking moves should improve tactical coverage against stockfish-1800 while preserving existing reductions for ordinary quiet moves.`
+- implementation_summary: `Added a NativeBoard.MoveGivesCheck helper and used it to exempt quiet checking moves from shallow quiet futility pruning. Negamax now detects checking moves after making them and skips late-move reduction for those moves while preserving the existing V4.3 evaluation, null-move, reverse futility, killer, and quiet-history behavior.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `198/161/641`
+- score: `278.5`
+- score_rate: `0.2785`
+- average_plies: `100.0820`
+- average_processing_time_ms: `101.3758`
+- average_positions_or_nodes: `6627.6102`
+- inferred_conclusion: `Rejected: preserving quiet checking moves from shallow futility pruning and late-move reduction improved score_rate over the V4.0 stockfish-1800 reference baseline (0.2785 vs 0.2340) with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0360, but lcb95=0.2570 remained far below the required 0.5 threshold. The quiet-check exemption is directionally useful for tactical coverage, but it is not sufficient against stockfish-1800; future attempts need larger move-quality gains from stronger tactical search/selectivity or more impactful evaluation changes rather than another narrow pruning exemption alone.`

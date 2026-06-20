@@ -24,7 +24,7 @@
     "approved_reference_score_source": "autoresearch/approved_logs/v4_0Engine-Stockfish1800-result.csv",
     "notes": "V4.0 remains the latest approved engine seed. Its current evaluator baseline reference is 0.2340 against stockfish-1800 over 1000 games, with zero failures and lcb95=0.2150."
   },
-  "next_candidate_version": "v4.3",
+  "next_candidate_version": "v4.4",
   "agent": {
     "max_hypotheses_per_experiment": 2,
     "codex_turn_timeout_minutes": 15

@@ -859,6 +859,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.3",
+      "api_version": "v4_3",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_3Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Quiet checking moves are tactically important enough that shallow quiet futility pruning should not discard them before search.",
+        "Skipping late-move reduction for quiet checking moves should improve tactical coverage against stockfish-1800 while preserving existing reductions for ordinary quiet moves."
+      ],
+      "summary": "Added a NativeBoard.MoveGivesCheck helper and used it to exempt quiet checking moves from shallow quiet futility pruning. Negamax now detects checking moves after making them and skips late-move reduction for those moves while preserving the existing V4.3 evaluation, null-move, reverse futility, killer, and quiet-history behavior.",
+      "implementation_summary": "Added a NativeBoard.MoveGivesCheck helper and used it to exempt quiet checking moves from shallow quiet futility pruning. Negamax now detects checking moves after making them and skips late-move reduction for those moves while preserving the existing V4.3 evaluation, null-move, reverse futility, killer, and quiet-history behavior.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 198,
+          "draws": 161,
+          "losses": 641,
+          "score": 278.5,
+          "score_rate": 0.2785,
+          "text": "C# v4.3 scored 278.5/1000 against Stockfish (1800 Elo): 198 wins, 161 draws, 641 losses, score rate 0.2785."
+        }
+      },
+      "limitations": []
     }
   ]
 }
