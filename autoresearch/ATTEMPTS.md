@@ -1156,3 +1156,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.9137`
 - average_positions_or_nodes: `7383.9649`
 - inferred_conclusion: `Rejected: the bishop-pair bonus plus safe checking-capture extension scored 0.4760 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0369. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0430, but average nodes fell to 7383.96 versus v4.8's 7542.32 and the added tactical/evaluation coverage did not improve move quality enough. Future V4 work should avoid combining small static bishop-pair tuning with extra horizon extensions on this path, preserve v4.8's quiescence budget behavior, and seek lower-overhead tactical-search changes or stronger independent move-quality signals.`
+
+## Attempt: 2026-06-20T23:19:57Z - v4.22
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.22`
+- version_bump: `minor`
+- hypotheses:
+  - `A modest pawn-shield bonus for back-rank or second-rank kings while queens remain will improve king-safety decisions beyond the existing king piece-square table without adding search overhead.`
+  - `Scaling the shield term out with endgame weight should avoid fighting the existing endgame king-centralization and mop-up logic.`
+- implementation_summary: `Added middle-game-scaled pawn-shield scoring around each king using friendly pawns one and two ranks in front of the king, gated to queen-present positions and home-side king ranks.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `388/168/444`
+- score: `472.0`
+- score_rate: `0.4720`
+- average_plies: `96.0160`
+- average_processing_time_ms: `100.8864`
+- average_positions_or_nodes: `7301.4332`
+- inferred_conclusion: `Rejected: the queen-present king pawn-shield term reduced score_rate to 0.4720 versus the approved 0.4795 baseline, with improvement_lcb95 -0.0408. The feature did not cause crashes, illegal moves, or excessive max-plies games, but it appears to distort move choice enough to underperform; future attempts should avoid adding generic king-shelter bonuses on top of the current king PST/search mix unless they are tied to concrete attack/line-opening signals.`

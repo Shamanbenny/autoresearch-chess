@@ -1470,6 +1470,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.22",
+      "api_version": "v4_22",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_22Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A modest pawn-shield bonus for back-rank or second-rank kings while queens remain will improve king-safety decisions beyond the existing king piece-square table without adding search overhead.",
+        "Scaling the shield term out with endgame weight should avoid fighting the existing endgame king-centralization and mop-up logic."
+      ],
+      "summary": "Added middle-game-scaled pawn-shield scoring around each king using friendly pawns one and two ranks in front of the king, gated to queen-present positions and home-side king ranks.",
+      "implementation_summary": "Added middle-game-scaled pawn-shield scoring around each king using friendly pawns one and two ranks in front of the king, gated to queen-present positions and home-side king ranks.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 388,
+          "draws": 168,
+          "losses": 444,
+          "score": 472.0,
+          "score_rate": 0.472,
+          "text": "C# v4.22 scored 472.0/1000 against Stockfish (1800 Elo): 388 wins, 168 draws, 444 losses, score rate 0.4720."
+        }
+      },
+      "limitations": []
     }
   ]
 }
