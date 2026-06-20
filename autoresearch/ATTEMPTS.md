@@ -852,3 +852,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `105.3743`
 - average_positions_or_nodes: `3329.5878`
 - inferred_conclusion: `Rejected: adding a bounded quiet-check ply inside quiescence caused a major regression versus the approved v4.6 seed, dropping score_rate from 0.4595 to 0.3190 against stockfish-1800 with improvement_lcb95=-0.1734, zero failures, and max_plies_rate=0.0450. The canonical CSV shows average positions/nodes fell from v4.6's 6531.91 to 3329.59, matching the evaluator summary's visible node-rate collapse. The quiescence quiet-check pass appears to spend too much 100ms budget generating and testing quiet checking moves at horizon nodes, reducing effective main-search coverage. Future work should keep the approved v4.1/v4.5/v4.6 normal-search and defender-aware quiescence changes, but avoid broad quiet-check expansion in quiescence unless it is much more selective, ordered, or triggered only by concrete tactical conditions.`
+
+## Attempt: 2026-06-20T18:20:32Z - v4.8
+
+- status: `approved`
+- commit: `<pending-manual-commit>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.6`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_6Engine.cs`
+- candidate_version: `v4.8`
+- version_bump: `minor`
+- hypotheses:
+  - `Moving the non-check quiescence stand-pat beta cutoff before capture generation will recover 100ms search budget lost to unnecessary legal-capture generation and ordering in already-good horizon positions.`
+  - `Keeping V4.6's approved defender-aware capture filter and normal-search quiet-check extension intact, while only optimizing quiescence control flow, should improve effective depth without repeating V4.7's broad quiet-check expansion failure.`
+- implementation_summary: `Cloned v4.6 into v4.8 and preserved the approved V4.5 defender-aware quiescence capture filter plus V4.6 quiet-check futility/LMR protection and shallow extension. In quiescence, non-check nodes now evaluate stand-pat and return on beta cutoff before generating and ordering capture moves; in-check nodes still generate legal evasions before evaluation because stand-pat is not legal.`
+- evaluation_log_path: `autoresearch/approved_logs/V4_8Engine-385a585-result.csv`
+- wins/draws/losses: `382/195/423`
+- score: `479.5`
+- score_rate: `0.4795`
+- improvement_lcb95: `-0.0139`
+- average_plies: `96.6290`
+- average_processing_time_ms: `100.8318`
+- average_positions_or_nodes: `7542.3228`
+- inferred_conclusion: `Approved by manual override: moving the non-check quiescence stand-pat beta cutoff before capture generation improved raw score_rate from v4.6's 0.4595 to 0.4795 and raised node throughput from 6531.91 to 7542.32 average positions/nodes, with zero failures and max_plies_rate=0.0290. This did not clear the normal statistical gate because improvement_lcb95=-0.0139, but it is being kept as the next seed to preserve the directionally positive combined changes before continuing autoresearch. Future work should treat v4.8 as a pragmatic seed, not as a statistically proven improvement, and pair this budget-saving quiescence change with another low-cost move-quality improvement.`
