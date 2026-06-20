@@ -1026,3 +1026,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.9923`
 - average_positions_or_nodes: `7297.4536`
 - inferred_conclusion: `Rejected: the open-position gated bishop-pair bonus scored 0.4675 versus the approved v4.8 seed's 0.4795, with improvement_lcb95=-0.0457. It was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0390, but reduced average nodes to 7297.45 from v4.8's 7542.32 and did not preserve the directionally positive v4.14 generic bishop-pair signal. Future V4 work should avoid further bishop-pair bonus variants on this path and prioritize low-cost tactical/search changes or more concrete conversion features.`
+
+## Attempt: 2026-06-20T21:16:22Z - v4.16
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.16`
+- version_bump: `minor`
+- hypotheses:
+  - `Caching the per-node static evaluation used by shallow quiet futility pruning will recover search budget at 100ms without changing move ordering, evaluation values, or pruning decisions.`
+- implementation_summary: `Changed quiet futility pruning to receive the nullable static evaluation by reference and populate it once per node, so multiple quiet futility checks reuse the same evaluation instead of recomputing it for each candidate move.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `397/174/429`
+- score: `484.0`
+- score_rate: `0.4840`
+- average_plies: `96.9520`
+- average_processing_time_ms: `100.9391`
+- average_positions_or_nodes: `7511.0359`
+- inferred_conclusion: `Rejected: caching the per-node static evaluation for quiet futility pruning was stable and directionally positive on raw score_rate, improving from v4.8's 0.4795 reference to 0.4840 with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0380. However, it did not clear the paired confidence gate with improvement_lcb95=-0.0293, and average nodes slightly declined to 7511.04 versus v4.8's 7542.32. Future work may preserve this as a low-risk cleanup only if combined with a stronger independent improvement, but it should not be treated as a standalone approved strength gain.`
