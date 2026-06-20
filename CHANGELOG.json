@@ -1283,6 +1283,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.15",
+      "api_version": "v4_15",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_15Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A bishop-pair bonus should be more useful when enough pawns have been exchanged for the bishops' long-range mobility to matter.",
+        "Gating the bonus by total pawn count should retain the directionally positive v4.14 bishop-pair signal while avoiding a broad static bonus in closed positions."
+      ],
+      "summary": "Added a 28 centipawn bishop-pair bonus for each side only when the total pawn count is 12 or less, preserving v4.8-derived search and quiescence behavior.",
+      "implementation_summary": "Added a 28 centipawn bishop-pair bonus for each side only when the total pawn count is 12 or less, preserving v4.8-derived search and quiescence behavior.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 377,
+          "draws": 181,
+          "losses": 442,
+          "score": 467.5,
+          "score_rate": 0.4675,
+          "text": "C# v4.15 scored 467.5/1000 against Stockfish (1800 Elo): 377 wins, 181 draws, 442 losses, score rate 0.4675."
+        }
+      },
+      "limitations": []
     }
   ]
 }

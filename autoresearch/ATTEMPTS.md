@@ -1004,3 +1004,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.9285`
 - average_positions_or_nodes: `7460.0190`
 - inferred_conclusion: `Rejected: the 24 centipawn bishop-pair bonus was directionally positive on raw score_rate, improving from the approved v4.8 reference 0.4795 to 0.4850, but it did not clear the paired confidence gate with improvement_lcb95=-0.0277. The change was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0310, while average nodes were slightly below v4.8 at 7460.02 versus 7542.32. Future work should not rely on another small generic static evaluation bonus to pass approval; prefer changes with clearer tactical or search impact, or a more selective bishop-pair condition tied to open positions or endgame conversion.`
+
+## Attempt: 2026-06-20T20:56:10Z - v4.15
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.15`
+- version_bump: `minor`
+- hypotheses:
+  - `A bishop-pair bonus should be more useful when enough pawns have been exchanged for the bishops' long-range mobility to matter.`
+  - `Gating the bonus by total pawn count should retain the directionally positive v4.14 bishop-pair signal while avoiding a broad static bonus in closed positions.`
+- implementation_summary: `Added a 28 centipawn bishop-pair bonus for each side only when the total pawn count is 12 or less, preserving v4.8-derived search and quiescence behavior.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `377/181/442`
+- score: `467.5`
+- score_rate: `0.4675`
+- average_plies: `97.3500`
+- average_processing_time_ms: `100.9923`
+- average_positions_or_nodes: `7297.4536`
+- inferred_conclusion: `Rejected: the open-position gated bishop-pair bonus scored 0.4675 versus the approved v4.8 seed's 0.4795, with improvement_lcb95=-0.0457. It was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0390, but reduced average nodes to 7297.45 from v4.8's 7542.32 and did not preserve the directionally positive v4.14 generic bishop-pair signal. Future V4 work should avoid further bishop-pair bonus variants on this path and prioritize low-cost tactical/search changes or more concrete conversion features.`
