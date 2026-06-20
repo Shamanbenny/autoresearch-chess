@@ -1112,3 +1112,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.7305`
 - average_positions_or_nodes: `7565.2786`
 - inferred_conclusion: `Rejected: moving null-move pruning ahead of legal move generation plus per-node quiet-futility static-eval caching increased average nodes slightly to 7565.28 versus the v4.8 seed's 7542.32, but reduced score_rate to 0.4585 against the approved 0.4795 reference with improvement_lcb95=-0.0540. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0420, so the regression appears to be move-quality/search-shape related rather than a reliability issue. Future V4 work should avoid reordering null-move pruning before legal move generation in this engine despite the small throughput gain; any static-eval caching should only be reused if paired with an independent move-quality improvement and preferably without changing pruning order.`
+
+## Attempt: 2026-06-20T22:38:11Z - v4.20
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.20`
+- version_bump: `minor`
+- hypotheses:
+  - `Caching the per-node static evaluation used by shallow quiet futility pruning will avoid repeated evaluation work within the same node while preserving pruning thresholds and move semantics.`
+  - `Scoring only true stalemate nodes as exact draws should improve conversion and drawing defense without repeating the rejected broader exact repetition/50-move normalization.`
+- implementation_summary: `Changed quiet futility pruning to populate the nullable static evaluation by reference so later quiet futility checks in the same node reuse it, and changed no-legal-move non-check nodes to return an exact draw score while leaving repetition and 50-move draw contempt behavior unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `366/199/435`
+- score: `465.5`
+- score_rate: `0.4655`
+- average_plies: `97.9560`
+- average_processing_time_ms: `100.8397`
+- average_positions_or_nodes: `7433.0399`
+- inferred_conclusion: `Rejected: combining per-node quiet-futility static-eval caching with exact stalemate draw scoring reduced score_rate to 0.4655 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0463. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0420, but average nodes fell to 7433.04 versus v4.8's 7542.32 and move quality regressed. Future V4 work should avoid pairing the quiet-futility caching cleanup with stalemate exact-draw scoring; exact draw normalization appears to weaken this engine's practical draw-contempt behavior, and caching should only be reused with a stronger independent move-quality improvement.`
