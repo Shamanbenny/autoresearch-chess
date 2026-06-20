@@ -77,7 +77,7 @@ source .venv/bin/activate
 ```
 
 The Linux autoresearch evaluator expects the locally extracted binary at
-`autoresearch/stockfish/stockfish-ubuntu-x86-64-avx2`.
+`autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2`.
 
 ## Command Arguments
 
@@ -258,11 +258,11 @@ helpers, package dependencies, or evaluator changes as part of an experiment.
 Every normal candidate is evaluated by the local C# runner against a fixed local
 Stockfish opponent:
 
-- opponent: `stockfish-1350`
-- Stockfish setting: `UCI_LimitStrength=true`, `UCI_Elo=1350`
+- opponent: `stockfish-1800`
+- Stockfish setting: `UCI_LimitStrength=true`, `UCI_Elo=1800`
 - move time limit: `100ms`
-- games: `500`
-- color split: `250` candidate-as-White games and `250` candidate-as-Black games
+- games: `1000`
+- color split: `500` candidate-as-White games and `500` candidate-as-Black games
 - max plies: `200`
 - workers: `6`
 - transport: direct local engine-vs-Stockfish evaluation through
@@ -279,9 +279,9 @@ The command shape is:
 ```bash
 dotnet run --project engine_csharp/src/LocalTesting -- evaluate-stock \
   --engine-file <candidate_engine_file> \
-  --stockfish-path autoresearch/stockfish/stockfish-ubuntu-x86-64-avx2 \
-  --stockfish-elo 1350 \
-  --games 500 \
+  --stockfish-path autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2 \
+  --stockfish-elo 1800 \
+  --games 1000 \
   --time-limit-ms 100 \
   --max-plies 200 \
   --workers 6 \
@@ -291,7 +291,7 @@ dotnet run --project engine_csharp/src/LocalTesting -- evaluate-stock \
 
 `run_autoresearch.py` supplies the concrete candidate path and attempt id from
 its current state, and it resolves the Linux-local
-`autoresearch/stockfish/stockfish-ubuntu-x86-64-avx2` binary.
+`autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2` binary.
 Do not change these constants during normal experiments; edit `state.json` only
 when intentionally revising the workflow outside an active candidate run.
 
@@ -337,7 +337,7 @@ Each version entry should include:
 - `summary`: frontend display summary copied from `implementation_summary`
 - `implementation_summary`: raw autoresearch implementation summary from `RETURN.json`
 - `hypotheses`: the experiment hypotheses used for the version
-- `stockfish_1350.text`: standardized display text for the frontend
+- `evaluation_opponents.<opponent>.text`: standardized display text for the frontend
 - `limitations`: frontend-facing limitations, defaulting to an empty list
 
 After every attempt, `run_autoresearch.py` appends or updates the candidate's
@@ -347,8 +347,8 @@ fields both come from `RETURN.json`'s `implementation_summary` value. New
 approved candidates are written with `"served": false` by default. Rejected
 candidates remain in `CHANGELOG.json` with `status: "rejected"` so downstream
 consumers can inspect experiment history without serving or displaying those
-versions publicly. If an attempt never reaches a final evaluator result, its
-`stockfish_1350` numeric fields are recorded as `null` so frontend code can
+versions publicly. If an attempt never reaches a final evaluator result, that
+opponent's numeric fields are recorded as `null` so frontend code can
 ignore those points cleanly. Change `"served"` to `true` only when the HTTP
 serving switch and endpoint documentation have also been updated for that
 version.
@@ -360,7 +360,7 @@ A candidate is approved only when all of these are true:
 - the C# solution builds successfully
 - the evaluator completes and writes the canonical CSV
 - the candidate records no crash, illegal move, timeout, or harness failure
-- `score_rate > latest_approved.approved_reference_score_rate_vs_stockfish_1350`
+- `score_rate > latest_approved.approved_reference_score_rate_vs_current_baseline`
 - `lcb95 > 0.5`
 - `max_plies_rate < 0.10`
 

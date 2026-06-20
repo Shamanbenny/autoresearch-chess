@@ -2,6 +2,10 @@
   "schema_version": 2,
   "generated_from": "autoresearch/ATTEMPTS.md and autoresearch/approved_logs",
   "evaluation_opponents": {
+    "stockfish-1800": {
+      "name": "Stockfish",
+      "elo": 1800
+    },
     "stockfish-1350": {
       "name": "Stockfish",
       "elo": 1350
@@ -780,6 +784,16 @@
       "implementation_summary": "Added a persistent quiet-history table to the V4.0 search context, scored quiet moves with a small capped history bonus below TT/capture/killer priority, and rewarded quiet beta cutoffs by remaining-depth-squared history increments while preserving the existing evaluation and pruning guards.",
       "evaluation_log_path": "autoresearch/approved_logs/V4_0Engine-99698ba-result.csv",
       "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 143,
+          "draws": 182,
+          "losses": 675,
+          "score": 234.0,
+          "score_rate": 0.234,
+          "evaluation_log_path": "autoresearch/approved_logs/v4_0Engine-Stockfish1800-result.csv",
+          "text": "C# V4.0 scored 234.0/1000 against Stockfish (1800 Elo): 143 wins, 182 draws, 675 losses, score rate 0.2340."
+        },
         "stockfish-1350": {
           "games": 1000,
           "wins": 796,

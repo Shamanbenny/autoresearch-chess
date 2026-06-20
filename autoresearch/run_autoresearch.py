@@ -42,6 +42,8 @@ DEFAULT_STOCKFISH_PATH = (
     / "stockfish"
     / "stockfish-ubuntu-x86-64-avx2"
 )
+APPROVED_REFERENCE_SCORE_KEY = "approved_reference_score_rate_vs_current_baseline"
+LEGACY_APPROVED_REFERENCE_SCORE_KEY = "approved_reference_score_rate_vs_stockfish_1350"
 
 
 @dataclass(frozen=True)
@@ -682,6 +684,8 @@ def parse_version(version: str) -> tuple[int, int]:
 def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) -> str:
     latest = state["latest_approved"]
     evaluator = state["evaluator"]
+    approved_score = latest_approved_reference_score(state)
+    approved_score_display = f"{approved_score:.4f}" if approved_score is not None else "unrecorded"
     max_hypotheses = state.get("agent", {}).get("max_hypotheses_per_experiment", 2)
     program = textwrap.dedent(
         f"""\
@@ -717,7 +721,7 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
         - candidate_version: `{candidate.version}`
         - candidate_engine_file: `{candidate.sandbox_engine_file.name}`
         - latest_approved_version: `{latest['version']}`
-        - latest_approved_reference_score_rate_vs_stockfish_1350: `{latest['approved_reference_score_rate_vs_stockfish_1350']:.4f}`
+        - latest_approved_reference_score_rate_vs_current_baseline: `{approved_score_display}`
         - version_bump: `{candidate.version_bump}`
 
         ## Engine API
@@ -804,7 +808,7 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
 
         Therefore:
         - `score_rate = total_score / games`
-        - `approved_seed_score_rate = the latest approved seed's recorded stockfish-1350 reference score rate from autoresearch/ATTEMPTS.md`
+        - `approved_seed_score_rate = the latest approved seed's recorded reference score rate against the current evaluator baseline from autoresearch/state.json`
         """
     )
     return program
@@ -1356,8 +1360,32 @@ def sample_sd(values: list[float], mean: float) -> float:
     return math.sqrt(sum((value - mean) ** 2 for value in values) / (len(values) - 1))
 
 
+def latest_approved_reference_score(state: dict[str, Any]) -> float | None:
+    latest = state["latest_approved"]
+    value = latest.get(APPROVED_REFERENCE_SCORE_KEY)
+    if value is None and APPROVED_REFERENCE_SCORE_KEY not in latest:
+        value = latest.get(LEGACY_APPROVED_REFERENCE_SCORE_KEY)
+    if value is None:
+        return None
+    return float(value)
+
+
+def require_latest_approved_reference_score(state: dict[str, Any]) -> float:
+    score = latest_approved_reference_score(state)
+    if score is None:
+        evaluator = state["evaluator"]
+        latest = state["latest_approved"]
+        raise SystemExit(
+            "Latest approved seed has no reference score for the current evaluator baseline "
+            f"({evaluator['opponent']}, UCI_Elo={evaluator['stockfish_elo']}). "
+            f"Run a baseline evaluation for {latest['version']} and record "
+            f"{APPROVED_REFERENCE_SCORE_KEY} before approving new candidates."
+        )
+    return score
+
+
 def decide_candidate(metrics: EvaluationMetrics, state: dict[str, Any]) -> tuple[str, str]:
-    approved_score = state["latest_approved"]["approved_reference_score_rate_vs_stockfish_1350"]
+    approved_score = require_latest_approved_reference_score(state)
     approval = state["evaluator"]["approval"]
     failures = sum(metrics.failure_counts[key] for key in ("crash", "illegal_move", "timeout", "harness"))
     if failures > 0:
@@ -1418,7 +1446,7 @@ def build_evaluation_summary(
     metrics: EvaluationMetrics | None,
     state: dict[str, Any],
 ) -> str:
-    approved_score = state["latest_approved"]["approved_reference_score_rate_vs_stockfish_1350"]
+    approved_score = require_latest_approved_reference_score(state)
     if metrics is None:
         return textwrap.dedent(
             f"""\
@@ -1490,7 +1518,7 @@ def update_state_and_attempts(
             "engine_file": str(candidate.engine_file.relative_to(REPO_ROOT)),
             "commit": attempt_id,
             "approved_recorded_at": now[:10],
-            "approved_reference_score_rate_vs_stockfish_1350": round(metrics.score_rate, 4),
+            APPROVED_REFERENCE_SCORE_KEY: round(metrics.score_rate, 4),
             "approved_reference_score_source": "<pending>",
             "notes": attempt_note["implementation_summary"],
         }
@@ -1572,7 +1600,7 @@ def update_latest_approved_markdown(latest: dict[str, Any]) -> None:
         - approved_file: `{latest['engine_file']}`
         - approved_commit: `{latest['commit']}`
         - approved_recorded_at: `{latest['approved_recorded_at']}`
-        - approved_reference_score_rate_vs_stockfish_1350: `{latest['approved_reference_score_rate_vs_stockfish_1350']:.4f}`
+        - approved_reference_score_rate_vs_current_baseline: `{latest[APPROVED_REFERENCE_SCORE_KEY]:.4f}`
         - approved_reference_score_source: `{latest['approved_reference_score_source']}`
         - notes: `{latest['notes']}`
         """
@@ -1678,6 +1706,10 @@ def load_changelog() -> dict[str, Any]:
             "schema_version": 2,
             "generated_from": "autoresearch/ATTEMPTS.md and autoresearch/approved_logs",
             "evaluation_opponents": {
+                "stockfish-1800": {
+                    "name": "Stockfish",
+                    "elo": 1800,
+                },
                 "stockfish-1350": {
                     "name": "Stockfish",
                     "elo": 1350,

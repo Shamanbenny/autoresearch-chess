@@ -37,7 +37,7 @@ Route versions also accept underscores, for example `/api/chess/v3_4`.
 `GET /api/chess/metadata` returns `CHANGELOG.json` as JSON. That file is the
 frontend contract for V2+ C# engine metadata. Each entry records whether the
 engine is currently served, its route version, summary, hypotheses,
-limitations, engine file path, and standardized Stockfish 1350 score text. The
+limitations, engine file path, and standardized Stockfish score text. The
 `summary` field is copied from autoresearch's `implementation_summary`. A
 version can exist in `engine_csharp/src/Engine.Core/` with `"served": false`;
 only compiled versions intended for public route dispatch should be marked
@@ -55,9 +55,15 @@ Example metadata response:
 ```json
 {
   "schema_version": 1,
-  "stockfish_baseline": {
-    "name": "Stockfish",
-    "elo": 1350
+  "evaluation_opponents": {
+    "stockfish-1800": {
+      "name": "Stockfish",
+      "elo": 1800
+    },
+    "stockfish-1350": {
+      "name": "Stockfish",
+      "elo": 1350
+    }
   },
   "versions": [
     {
@@ -70,8 +76,10 @@ Example metadata response:
       "hypotheses": [
         "Making draw/repetition contempt material-aware will improve score by letting materially worse positions prefer repetition or 50-move draw chances instead of steering away from saves."
       ],
-      "stockfish_1350": {
-        "text": "C# v3.4 scored 323.0/500 against Stockfish (1350 Elo): 277 wins, 92 draws, 131 losses, score rate 0.6460."
+      "evaluation_opponents": {
+        "stockfish-1350": {
+          "text": "C# v3.4 scored 323.0/500 against Stockfish (1350 Elo): 277 wins, 92 draws, 131 losses, score rate 0.6460."
+        }
       },
       "limitations": []
     }
@@ -190,10 +198,10 @@ dotnet run --project engine_csharp/src/LocalTesting -- puzzle-2 --engine-file en
 dotnet run --project engine_csharp/src/LocalTesting -- endgame-1 --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --time-limit-seconds 1.0
 dotnet run --project engine_csharp/src/LocalTesting -- endgame-2 --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --time-limit-seconds 1.0
 dotnet run --project engine_csharp/src/LocalTesting -- evaluate-match --engine-a-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --engine-b-file engine_csharp/src/Engine.Core/V3/V3_0Engine.cs --games 20 --time-limit-ms 100 --max-plies 200 --workers 6
-dotnet run --project engine_csharp/src/LocalTesting -- evaluate-stock --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --stockfish-path autoresearch/stockfish/stockfish-ubuntu-x86-64-avx2 --stockfish-elo 1350 --games 500 --time-limit-ms 100 --max-plies 200 --workers 6 --log --short-sha 1a2b3c4
+dotnet run --project engine_csharp/src/LocalTesting -- evaluate-stock --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --stockfish-path autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2 --stockfish-elo 1800 --games 1000 --time-limit-ms 100 --max-plies 200 --workers 6 --log --short-sha 1a2b3c4
 ```
 
-For Linux, the documented local path is `autoresearch/stockfish/stockfish-ubuntu-x86-64-avx2` after extracting the official tarball above. On Windows, install Stockfish separately and pass the extracted executable path with `--stockfish-path`. The standard autoresearch evaluator contract uses `stockfish-1350`, `500` games, `100ms` per move, `200` max plies, `6` workers, `--log`, and a unique `--short-sha` attempt id. See `autoresearch/README.md` for the current approval contract and any workflow-specific overrides.
+For Linux, the documented local path is `autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2` after extracting the official tarball above. On Windows, install Stockfish separately and pass the extracted executable path with `--stockfish-path`. The standard autoresearch evaluator contract uses `stockfish-1800`, `1000` games, `100ms` per move, `200` max plies, `6` workers, `--log`, and a unique `--short-sha` attempt id. See `autoresearch/README.md` for the current approval contract and any workflow-specific overrides.
 
 ## Autoresearch
 
@@ -209,7 +217,7 @@ The repository also includes a chess-specific `autoresearch` paradigm inspired b
 - `autoresearch/README.md`
 - `autoresearch/ATTEMPTS.md`
 
-The fixed evaluator baseline is local `stockfish-1350`. The current evaluator command and approval rule are documented in `autoresearch/README.md`; latest approved seed metadata lives in `autoresearch/state.json` and the append-only history in `autoresearch/ATTEMPTS.md`.
+The fixed evaluator baseline is local `stockfish-1800`. The current evaluator command and approval rule are documented in `autoresearch/README.md`; latest approved seed metadata lives in `autoresearch/state.json` and the append-only history in `autoresearch/ATTEMPTS.md`.
 
 Approved V2+ frontend-facing metadata lives in `CHANGELOG.json`. When
 `autoresearch/run_autoresearch.py` approves a candidate, it appends or updates

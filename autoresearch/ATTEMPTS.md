@@ -15,7 +15,7 @@ Use this exact structure for each appended attempt:
 
 - status: `approved` | `rejected`
 - commit: `<short_sha>` if approved, otherwise `<n/a>`
-- evaluator_baseline: `stockfish-1350`
+- evaluator_baseline: `stockfish-1800`
 - seed_version: `<version>`
 - seed_file: `<path>`
 - candidate_version: `<version>`
@@ -672,3 +672,21 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `98.9959`
 - average_positions_or_nodes: `9776.6691`
 - inferred_conclusion: `Approved: the capped side-aware quiet-history ordering layer produced a small but real improvement over v3.15, raising score_rate from 0.8375 to 0.8420 with lcb95=0.8246, zero crash/illegal/timeout/harness failures, and max_plies_rate=0.0390. Future v4 experiments should continue favoring narrow move-ordering and search-selectivity changes that improve the existing LMR/futility stack without broadening pruning risk or adding evaluation cost.`
+
+## Baseline Calibration: 2026-06-20 - V4.0 vs stockfish-1800
+
+- evaluator_baseline: `stockfish-1800`
+- engine_version: `V4.0`
+- engine_file: `engine_csharp/src/Engine.Core/V4/V4_0Engine.cs`
+- evaluation_log_path: `autoresearch/approved_logs/v4_0Engine-Stockfish1800-result.csv`
+- wins/draws/losses: `143/182/675`
+- score: `234.0`
+- score_rate: `0.2340`
+- average_plies: `100.89`
+- average_processing_time_ms: `103.875`
+- average_positions_or_nodes: `5245.45`
+- paired_mean_score: `0.2340`
+- paired_score_sd: `0.2576`
+- lcb95: `0.2150`
+- failures: `0`
+- note: `This calibrates the latest approved seed against the current stockfish-1800 evaluator baseline. Future candidates compare score_rate against 0.2340 until a newer engine is approved under the same baseline.`

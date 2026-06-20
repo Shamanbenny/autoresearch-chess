@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "evaluator": {
-    "opponent": "stockfish-1350",
-    "stockfish_elo": 1350,
+    "opponent": "stockfish-1800",
+    "stockfish_elo": 1800,
     "games": 1000,
     "time_limit_ms": 100,
     "max_plies": 200,
@@ -19,10 +19,10 @@
     "version": "v4.0",
     "engine_file": "engine_csharp/src/Engine.Core/V4/V4_0Engine.cs",
     "commit": "99698ba",
-    "approved_recorded_at": "2026-06-11",
-    "approved_reference_score_rate_vs_stockfish_1350": 0.842,
-    "approved_reference_score_source": "autoresearch/approved_logs/V4_0Engine-99698ba-result.csv",
-    "notes": "V4.0 is a direct namespace/type refactor of the approved V4.0 engine. It keeps the same quiet-history ordering logic and inherits V4.0's approved Stockfish-1350 reference result until a V4-specific evaluation log is recorded."
+    "approved_recorded_at": "2026-06-20",
+    "approved_reference_score_rate_vs_current_baseline": 0.234,
+    "approved_reference_score_source": "autoresearch/approved_logs/v4_0Engine-Stockfish1800-result.csv",
+    "notes": "V4.0 remains the latest approved engine seed. Its current evaluator baseline reference is 0.2340 against stockfish-1800 over 1000 games, with zero failures and lcb95=0.2150."
   },
   "next_candidate_version": "v4.1",
   "agent": {
