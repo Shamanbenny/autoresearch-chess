@@ -955,6 +955,16 @@ def ensure_codex_account_ready(
     candidate: Candidate,
     experiment_log_start_line: int,
 ) -> None:
+    local_account = codex.account(refresh_token=False)
+    if getattr(local_account, "account", None) is not None:
+        log_phase(
+            "Codex local account state is configured; skipping proactive login and "
+            "letting the first Codex operation validate the session."
+        )
+        return
+    if not getattr(local_account, "requires_openai_auth", False):
+        return
+
     account = codex.account(refresh_token=True)
     if not getattr(account, "requires_openai_auth", False):
         return
