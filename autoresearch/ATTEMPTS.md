@@ -1199,3 +1199,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.9252`
 - average_positions_or_nodes: `7408.1962`
 - inferred_conclusion: `Rejected: per-node quiet-futility static-eval caching was stable and slightly improved raw score_rate to 0.4810 versus the approved 0.4795 reference, but it did not clear the paired confidence gate with improvement_lcb95=-0.0321. Average nodes fell to 7408.20 versus the v4.8 reference, so this cleanup should not be treated as a standalone strength gain; future V4 attempts need a stronger independent move-quality improvement rather than relying on semantics-preserving caching.`
+
+## Attempt: 2026-06-20T23:59:12Z - v4.24
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.24`
+- version_bump: `minor`
+- hypotheses:
+  - `Caching the per-node static evaluation used by shallow quiet futility pruning will avoid repeated evaluation work within the same node while preserving pruning thresholds, move ordering, and evaluation semantics.`
+- implementation_summary: `Changed quiet futility pruning to receive the nullable static evaluation by reference and populate it once per node, so later quiet futility checks in the same node reuse the cached evaluation instead of recomputing it.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `380/186/434`
+- score: `473.0`
+- score_rate: `0.4730`
+- average_plies: `96.4270`
+- average_processing_time_ms: `100.7624`
+- average_positions_or_nodes: `7478.9818`
+- inferred_conclusion: `Rejected: per-node quiet-futility static-eval caching reduced score_rate to 0.4730 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0393. The change was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0320, while average nodes were 7478.98 versus the v4.8 reference. Future V4 attempts should not rely on this semantics-preserving caching as a standalone improvement; prioritize stronger move-quality changes and avoid further quiet-futility caching variants unless paired with an independently compelling tactical or evaluation gain.`

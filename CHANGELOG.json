@@ -1523,6 +1523,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.24",
+      "api_version": "v4_24",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_24Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Caching the per-node static evaluation used by shallow quiet futility pruning will avoid repeated evaluation work within the same node while preserving pruning thresholds, move ordering, and evaluation semantics."
+      ],
+      "summary": "Changed quiet futility pruning to receive the nullable static evaluation by reference and populate it once per node, so later quiet futility checks in the same node reuse the cached evaluation instead of recomputing it.",
+      "implementation_summary": "Changed quiet futility pruning to receive the nullable static evaluation by reference and populate it once per node, so later quiet futility checks in the same node reuse the cached evaluation instead of recomputing it.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 380,
+          "draws": 186,
+          "losses": 434,
+          "score": 473.0,
+          "score_rate": 0.473,
+          "text": "C# v4.24 scored 473.0/1000 against Stockfish (1800 Elo): 380 wins, 186 draws, 434 losses, score rate 0.4730."
+        }
+      },
+      "limitations": []
     }
   ]
 }
