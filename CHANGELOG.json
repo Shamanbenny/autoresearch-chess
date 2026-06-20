@@ -1151,6 +1151,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.10",
+      "api_version": "v4_10",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_10Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Quiet checking moves are already tactically protected in v4.8, but when they are ordered late they can still consume extra search effort before receiving their extension.",
+        "Adding a bounded top-ply move-order bonus for quiet checking moves should improve tactical coverage without repeating v4.7's expensive quiescence quiet-check expansion."
+      ],
+      "summary": "Added a QuietCheckMoveOrderBonus and applied it only to quiet moves at plies within the existing quiet-check extension depth when MoveGivesCheck is true, preserving v4.8 quiescence behavior and all public APIs.",
+      "implementation_summary": "Added a QuietCheckMoveOrderBonus and applied it only to quiet moves at plies within the existing quiet-check extension depth when MoveGivesCheck is true, preserving v4.8 quiescence behavior and all public APIs.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 361,
+          "draws": 173,
+          "losses": 466,
+          "score": 447.5,
+          "score_rate": 0.4475,
+          "text": "C# v4.10 scored 447.5/1000 against Stockfish (1800 Elo): 361 wins, 173 draws, 466 losses, score rate 0.4475."
+        }
+      },
+      "limitations": []
     }
   ]
 }

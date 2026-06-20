@@ -897,3 +897,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.9907`
 - average_positions_or_nodes: `7533.2822`
 - inferred_conclusion: `Rejected: relaxing the defender-aware quiescence losing-capture filter to keep near-equal defended captures reduced score_rate from the approved v4.8 seed's 0.4795 to 0.4545, with improvement_lcb95=-0.0581 and no failure issues. The added tactical coverage did not compensate for the extra quiescence work or changed capture choices, while max_plies_rate remained acceptable at 0.0310. Future V4 experiments should preserve the stricter v4.8 defended-capture pruning and look for lower-cost tactical-search improvements rather than broadening quiescence capture coverage.`
+
+## Attempt: 2026-06-20T19:12:43Z - v4.10
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.10`
+- version_bump: `minor`
+- hypotheses:
+  - `Quiet checking moves are already tactically protected in v4.8, but when they are ordered late they can still consume extra search effort before receiving their extension.`
+  - `Adding a bounded top-ply move-order bonus for quiet checking moves should improve tactical coverage without repeating v4.7's expensive quiescence quiet-check expansion.`
+- implementation_summary: `Added a QuietCheckMoveOrderBonus and applied it only to quiet moves at plies within the existing quiet-check extension depth when MoveGivesCheck is true, preserving v4.8 quiescence behavior and all public APIs.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `361/173/466`
+- score: `447.5`
+- score_rate: `0.4475`
+- average_plies: `98.2020`
+- average_processing_time_ms: `100.9633`
+- average_positions_or_nodes: `6558.3626`
+- inferred_conclusion: `Rejected: the bounded quiet-check move-order bonus reduced score_rate from the approved v4.8 seed's 0.4795 to 0.4475, with improvement_lcb95=-0.0651. Node throughput also fell materially to 6558.36 average positions/nodes versus v4.8's 7542.32, while failures remained zero and max_plies_rate was acceptable at 0.0410. Future V4 work should avoid adding make/unmake-based quiet-check ordering tests across move ordering, even when depth-bounded, because the added overhead appears to reduce effective 100ms search coverage more than the ordering improvement helps.`
