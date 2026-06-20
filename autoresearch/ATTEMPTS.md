@@ -875,3 +875,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.8318`
 - average_positions_or_nodes: `7542.3228`
 - inferred_conclusion: `Approved by manual override: moving the non-check quiescence stand-pat beta cutoff before capture generation improved raw score_rate from v4.6's 0.4595 to 0.4795 and raised node throughput from 6531.91 to 7542.32 average positions/nodes, with zero failures and max_plies_rate=0.0290. This did not clear the normal statistical gate because improvement_lcb95=-0.0139, but it is being kept as the next seed to preserve the directionally positive combined changes before continuing autoresearch. Future work should treat v4.8 as a pragmatic seed, not as a statistically proven improvement, and pair this budget-saving quiescence change with another low-cost move-quality improvement.`
+
+
+## Attempt: 2026-06-20T18:52:11Z - v4.9
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.9`
+- version_bump: `minor`
+- hypotheses:
+  - `Making quiescence losing-capture pruning less aggressive for near-equal defended captures will preserve tactical minor-piece exchanges while still skipping clearly bad high-value captures.`
+- implementation_summary: `Added a 100 centipawn material-loss margin to the defender-aware quiescence losing-capture filter, so defended captures are pruned only when the attacker exceeds the captured material by at least that margin; near-equal defended captures such as bishop-for-knight exchanges remain searchable.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `357/195/448`
+- score: `454.5`
+- score_rate: `0.4545`
+- average_plies: `97.8290`
+- average_processing_time_ms: `100.9907`
+- average_positions_or_nodes: `7533.2822`
+- inferred_conclusion: `Rejected: relaxing the defender-aware quiescence losing-capture filter to keep near-equal defended captures reduced score_rate from the approved v4.8 seed's 0.4795 to 0.4545, with improvement_lcb95=-0.0581 and no failure issues. The added tactical coverage did not compensate for the extra quiescence work or changed capture choices, while max_plies_rate remained acceptable at 0.0310. Future V4 experiments should preserve the stricter v4.8 defended-capture pruning and look for lower-cost tactical-search improvements rather than broadening quiescence capture coverage.`

@@ -1125,6 +1125,32 @@
       },
       "limitations": [],
       "inferred_conclusion": "Approved by manual override: moving the non-check quiescence stand-pat beta cutoff before capture generation improved raw score_rate from v4.6's 0.4595 to 0.4795 and raised node throughput from 6531.91 to 7542.32 average positions/nodes, with zero failures and max_plies_rate=0.0290. This did not clear the normal statistical gate because improvement_lcb95=-0.0139, but it is being kept as the next seed to preserve the directionally positive combined changes before continuing autoresearch. Future work should treat v4.8 as a pragmatic seed, not as a statistically proven improvement, and pair this budget-saving quiescence change with another low-cost move-quality improvement."
+    },
+    {
+      "version": "v4.9",
+      "api_version": "v4_9",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_9Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Making quiescence losing-capture pruning less aggressive for near-equal defended captures will preserve tactical minor-piece exchanges while still skipping clearly bad high-value captures."
+      ],
+      "summary": "Added a 100 centipawn material-loss margin to the defender-aware quiescence losing-capture filter, so defended captures are pruned only when the attacker exceeds the captured material by at least that margin; near-equal defended captures such as bishop-for-knight exchanges remain searchable.",
+      "implementation_summary": "Added a 100 centipawn material-loss margin to the defender-aware quiescence losing-capture filter, so defended captures are pruned only when the attacker exceeds the captured material by at least that margin; near-equal defended captures such as bishop-for-knight exchanges remain searchable.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 357,
+          "draws": 195,
+          "losses": 448,
+          "score": 454.5,
+          "score_rate": 0.4545,
+          "text": "C# v4.9 scored 454.5/1000 against Stockfish (1800 Elo): 357 wins, 195 draws, 448 losses, score rate 0.4545."
+        }
+      },
+      "limitations": []
     }
   ]
 }
