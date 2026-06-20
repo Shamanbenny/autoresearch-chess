@@ -19,13 +19,13 @@
   "latest_approved": {
     "version": "v4.6",
     "engine_file": "engine_csharp/src/Engine.Core/V4/V4_6Engine.cs",
-    "commit": "<pending-manual-commit>",
+    "commit": "04caa13",
     "approved_recorded_at": "2026-06-20",
     "approved_reference_score_rate_vs_current_baseline": 0.4595,
-    "approved_reference_score_source": "autoresearch/approved_logs/V4_6Engine-v4_6-0620162528-result.csv",
+    "approved_reference_score_source": "autoresearch/approved_logs/V4_6Engine-04caa13-result.csv",
     "notes": "Approved under the improvement-bound rule against the advancing v4.5 reference: combining the defender-aware quiescence filter with quiet-check protection and a bounded shallow extension raised score_rate from 0.4030 to 0.4595 with improvement_lcb95=0.0226, zero failures, and acceptable max_plies_rate=0.0360. This is the best V4 result so far; future experiments should build from v4.6 and continue with guarded tactical-search improvements rather than generic static evaluation additions."
   },
-  "next_candidate_version": "v4.7",
+  "next_candidate_version": "v4.8",
   "agent": {
     "max_hypotheses_per_experiment": 2,
     "codex_turn_timeout_minutes": 15

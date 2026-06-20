@@ -829,3 +829,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.4047`
 - average_positions_or_nodes: `6531.9059`
 - inferred_conclusion: `Approved under the improvement-bound rule against the advancing v4.5 reference: combining the defender-aware quiescence filter with quiet-check protection and a bounded shallow extension raised score_rate from 0.4030 to 0.4595 with improvement_lcb95=0.0226, zero failures, and acceptable max_plies_rate=0.0360. This is the best V4 result so far; future experiments should build from v4.6 and continue with guarded tactical-search improvements rather than generic static evaluation additions.`
+
+## Attempt: 2026-06-20T17:39:00Z - v4.7
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.6`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_6Engine.cs`
+- candidate_version: `v4.7`
+- version_bump: `minor`
+- hypotheses:
+  - `Combining the approved v4.1 quiet-check preservation with the approved v4.5 defender-aware quiescence capture filter and the approved v4.6 shallow quiet-check extension should improve tactical horizon coverage when the search reaches quiescence.`
+  - `A single bounded quiet-check ply inside quiescence should let forcing non-capture checks interact with defender-aware capture pruning without opening the full quiet-move tree or materially increasing max-plies failures.`
+- implementation_summary: `Cloned v4.6 into v4.7 and preserved the approved v4.1 quiet-check futility/LMR protection, v4.5 defender-aware quiescence capture filter, and v4.6 shallow quiet-check extension. Added one bounded quiet-check ply to quiescence: when not in check, quiescence still searches captures and promotions, but may also search quiet moves that give check, consuming a one-ply quiet-check budget so non-checking quiet moves remain excluded.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `226/186/588`
+- score: `319.0`
+- score_rate: `0.3190`
+- improvement_lcb95: `-0.1734`
+- average_plies: `103.9420`
+- average_processing_time_ms: `105.3743`
+- average_positions_or_nodes: `3329.5878`
+- inferred_conclusion: `Rejected: adding a bounded quiet-check ply inside quiescence caused a major regression versus the approved v4.6 seed, dropping score_rate from 0.4595 to 0.3190 against stockfish-1800 with improvement_lcb95=-0.1734, zero failures, and max_plies_rate=0.0450. The canonical CSV shows average positions/nodes fell from v4.6's 6531.91 to 3329.59, matching the evaluator summary's visible node-rate collapse. The quiescence quiet-check pass appears to spend too much 100ms budget generating and testing quiet checking moves at horizon nodes, reducing effective main-search coverage. Future work should keep the approved v4.1/v4.5/v4.6 normal-search and defender-aware quiescence changes, but avoid broad quiet-check expansion in quiescence unless it is much more selective, ordered, or triggered only by concrete tactical conditions.`
