@@ -886,6 +886,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.4",
+      "api_version": "v4_4",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_4Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Quiet checking moves are tactically important enough against stockfish-1800 that they should not be discarded by shallow quiet futility pruning or weakened by late-move reduction.",
+        "A tightly limited quiet-check extension at remaining depths up to 2 can improve horizon tactical coverage more than the prior check-pruning exemption alone, while keeping the existing null-move, futility, killer, and quiet-history safeguards intact."
+      ],
+      "summary": "Added quiet-check awareness in negamax: searched moves now detect whether they give check after make-move, quiet checking moves are excluded from late-move reduction, shallow quiet futility pruning verifies and preserves checking moves, and quiet checks at remaining depths up to 2 receive a one-ply extension.",
+      "implementation_summary": "Added quiet-check awareness in negamax: searched moves now detect whether they give check after make-move, quiet checking moves are excluded from late-move reduction, shallow quiet futility pruning verifies and preserves checking moves, and quiet checks at remaining depths up to 2 receive a one-ply extension.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 199,
+          "draws": 200,
+          "losses": 601,
+          "score": 299.0,
+          "score_rate": 0.299,
+          "text": "C# v4.4 scored 299.0/1000 against Stockfish (1800 Elo): 199 wins, 200 draws, 601 losses, score rate 0.2990."
+        }
+      },
+      "limitations": []
     }
   ]
 }

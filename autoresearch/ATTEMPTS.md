@@ -757,3 +757,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.3758`
 - average_positions_or_nodes: `6627.6102`
 - inferred_conclusion: `Rejected: preserving quiet checking moves from shallow futility pruning and late-move reduction improved score_rate over the V4.0 stockfish-1800 reference baseline (0.2785 vs 0.2340) with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0360, but lcb95=0.2570 remained far below the required 0.5 threshold. The quiet-check exemption is directionally useful for tactical coverage, but it is not sufficient against stockfish-1800; future attempts need larger move-quality gains from stronger tactical search/selectivity or more impactful evaluation changes rather than another narrow pruning exemption alone.`
+
+## Attempt: 2026-06-20T16:01:15Z - v4.4
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.0`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_0Engine.cs`
+- candidate_version: `v4.4`
+- version_bump: `minor`
+- hypotheses:
+  - `Quiet checking moves are tactically important enough against stockfish-1800 that they should not be discarded by shallow quiet futility pruning or weakened by late-move reduction.`
+  - `A tightly limited quiet-check extension at remaining depths up to 2 can improve horizon tactical coverage more than the prior check-pruning exemption alone, while keeping the existing null-move, futility, killer, and quiet-history safeguards intact.`
+- implementation_summary: `Added quiet-check awareness in negamax: searched moves now detect whether they give check after make-move, quiet checking moves are excluded from late-move reduction, shallow quiet futility pruning verifies and preserves checking moves, and quiet checks at remaining depths up to 2 receive a one-ply extension.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `199/200/601`
+- score: `299.0`
+- score_rate: `0.2990`
+- average_plies: `102.3270`
+- average_processing_time_ms: `101.7022`
+- average_positions_or_nodes: `6773.7643`
+- inferred_conclusion: `Rejected: preserving and shallow-extending quiet checking moves improved score_rate over the V4.0 stockfish-1800 reference baseline (0.2990 vs 0.2340), with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0460, but lcb95=0.2773 remained far below the required 0.5 threshold. The tactical quiet-check treatment is directionally useful but still much too small against stockfish-1800; future V4 attempts need larger move-quality gains from broader tactical search, evaluation, or selectivity improvements rather than further narrow quiet-check tuning.`
