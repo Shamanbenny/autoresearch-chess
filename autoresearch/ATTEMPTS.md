@@ -1285,3 +1285,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.9424`
 - average_positions_or_nodes: `7375.7488`
 - inferred_conclusion: `Rejected: doubling the persistent TT from 2^18 to 2^19 reduced score_rate to 0.4715 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0416. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0390, but average nodes fell to 7375.75, so the larger table likely hurt cache locality or search shape more than it reduced useful collisions. Future V4 work should keep the v4.8 table size and avoid pure TT-capacity increases unless paired with evidence of collision pressure or a replacement-policy change that preserves throughput.`
+
+## Attempt: 2026-06-21T01:21:00Z - v4.28
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.28`
+- version_bump: `minor`
+- hypotheses:
+  - `Root-level quiet beta cutoffs are strong per-game ordering signals that should feed the existing side-aware quiet-history table, improving later move ordering without changing evaluation, pruning thresholds, quiescence behavior, or adding extra move generation.`
+- implementation_summary: `Changed quiet beta-cutoff handling so ply-0 quiet cutoffs reward quiet history while still avoiding root killer-slot updates; non-root killer and quiet-history behavior is otherwise unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `371/192/437`
+- score: `467.0`
+- score_rate: `0.4670`
+- average_plies: `100.7900`
+- average_processing_time_ms: `101.1606`
+- average_positions_or_nodes: `7383.1709`
+- inferred_conclusion: `Rejected: feeding root-level quiet beta cutoffs into quiet history reduced score_rate to 0.4670 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0456. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0560, but average nodes fell to 7383.17 versus v4.8's 7542.32 and move quality regressed. Future V4 work should avoid root quiet-history reinforcement in this form; root cutoffs likely overfit aspiration-window/search-order artifacts and pollute later per-game quiet ordering more than they help.`

@@ -1629,6 +1629,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.28",
+      "api_version": "v4_28",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_28Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Root-level quiet beta cutoffs are strong per-game ordering signals that should feed the existing side-aware quiet-history table, improving later move ordering without changing evaluation, pruning thresholds, quiescence behavior, or adding extra move generation."
+      ],
+      "summary": "Changed quiet beta-cutoff handling so ply-0 quiet cutoffs reward quiet history while still avoiding root killer-slot updates; non-root killer and quiet-history behavior is otherwise unchanged.",
+      "implementation_summary": "Changed quiet beta-cutoff handling so ply-0 quiet cutoffs reward quiet history while still avoiding root killer-slot updates; non-root killer and quiet-history behavior is otherwise unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 371,
+          "draws": 192,
+          "losses": 437,
+          "score": 467.0,
+          "score_rate": 0.467,
+          "text": "C# v4.28 scored 467.0/1000 against Stockfish (1800 Elo): 371 wins, 192 draws, 437 losses, score rate 0.4670."
+        }
+      },
+      "limitations": []
     }
   ]
 }
