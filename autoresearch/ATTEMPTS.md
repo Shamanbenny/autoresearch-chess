@@ -1503,3 +1503,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `102.5890`
 - average_positions_or_nodes: `6077.5669`
 - inferred_conclusion: `Rejected: quiet-check quiescence badly reduced score_rate to 0.3970 versus the approved v4.8 reference at 0.4795, with average nodes falling to 6077.57 from the approved seed's roughly 7542-node baseline. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0410, so the regression is search-shape and move-quality rather than reliability. The latest approved blunder was a white Qd5 optimism at ply 55 allowing Bh2+/Bg3+/Qh2+/Qxf2#; v4.37's current worst overturn shifted earlier, with black playing Nxh2 at ply 42 at +532 and then collapsing after White's Qg5+ into a long forcing queen/bishop checking sequence ending in Qg7#. The attempted quiet-check qsearch did not solve the forcing-check horizon problem and likely over-expanded noisy checking lines while cutting overall depth too much. Future V4 work should avoid quiet-check quiescence broadening, even with score and queen gates, and should not spend more budget on check-generation scans unless they are proven much cheaper or replace other work rather than adding leaf branching.`
+
+## Attempt: 2026-06-21T06:17:09Z - v4.38
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.38`
+- version_bump: `minor`
+- hypotheses:
+  - `Recent blunders are dominated by optimistic material choices that allow queen-led forcing checks; disabling only optimistic fail-high pruning when an enemy queen is in close contact with the king may expose those tactics without broad threat scans or quiescence expansion.`
+  - `Guarding reverse futility pruning in close queen-contact positions should prevent shallow static-eval cutoffs from hiding defensive resources or opponent checking continuations near the horizon.`
+  - `Guarding null-move pruning under the same cheap queen-contact condition should reduce false fail-highs in exposed-king positions while preserving v4.8's tuned null-move behavior everywhere else.`
+- implementation_summary: `Added a NativeBoard.EnemyQueenNearKing helper that detects an enemy queen within Chebyshev distance 2 of the side-to-move king. Negamax now skips reverse futility pruning and null-move pruning in that narrow condition, after transposition-table cutoff checks; evaluation, move ordering, quiescence, extensions, TT sizing, and public API shape are unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `380/162/458`
+- score: `461.0`
+- score_rate: `0.4610`
+- average_plies: `96.3070`
+- average_processing_time_ms: `101.1735`
+- average_positions_or_nodes: `7254.1683`
+- inferred_conclusion: `Rejected: v4.38 scored 0.4610 versus the approved v4.8 reference at 0.4795, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0370, but average nodes fell to 7254.17 from v4.8's 7542.32. The queen-contact guard reduced throughput and still did not prevent the target failure mode. The approved blunder was White Qd5 at ply 55, scored +1028, allowing Bh2+ and a queen/bishop mating net ending Qxf2#. The current worst overturn shifted to Black d3 at ply 72, scored +1604, allowing Qxh6+ followed by repeated queen checks and Rh6#. This suggests the problem is not specifically reverse-futility or null-move pruning in close enemy-queen positions; disabling those cutoffs is too broad or too late, and the remaining mate threats involve coordinated queen/rook forcing lines that still escape the normal search horizon. Future attempts should avoid more queen-contact pruning guards, broad check-threat scans, and added checking-line search; any progress likely needs a cheaper ordering/time-allocation idea or a very concrete proven-threat detector that replaces work rather than adding selective search cost.`
