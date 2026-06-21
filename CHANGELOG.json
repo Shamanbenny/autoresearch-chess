@@ -1869,6 +1869,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.37",
+      "api_version": "v4_37",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_37Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A tightly capped quiescence search of quiet checking moves in queen-present, tactically imbalanced leaf positions can expose repeated-check mate nets that ordinary capture-only quiescence misses.",
+        "Gating quiet-check quiescence by absolute static score, queen presence, a two-check budget, and a four-move cap should preserve most v4.8 node throughput compared with prior broad root threat scans, check extensions, and king-danger evaluation terms.",
+        "Ordering the rare quiet-check quiescence candidates with the existing move-ordering stack should make the added search selective enough to improve tactical move choice without changing public APIs or static evaluation."
+      ],
+      "summary": "Added a queen-present, score-gated quiet-check quiescence path that searches at most four ordered quiet checking moves per eligible leaf and consumes a two-ply quiet-check budget across the quiescence line. Added NativeBoard helpers to detect queen presence and generate legal quiet checks while leaving evaluation, root search, TT sizing, pruning thresholds, and the public V4_37 API unchanged.",
+      "implementation_summary": "Added a queen-present, score-gated quiet-check quiescence path that searches at most four ordered quiet checking moves per eligible leaf and consumes a two-ply quiet-check budget across the quiescence line. Added NativeBoard helpers to detect queen presence and generate legal quiet checks while leaving evaluation, root search, TT sizing, pruning thresholds, and the public V4_37 API unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 312,
+          "draws": 170,
+          "losses": 518,
+          "score": 397.0,
+          "score_rate": 0.397,
+          "text": "C# v4.37 scored 397.0/1000 against Stockfish (1800 Elo): 312 wins, 170 draws, 518 losses, score rate 0.3970."
+        }
+      },
+      "limitations": []
     }
   ]
 }
