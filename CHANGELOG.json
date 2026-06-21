@@ -1813,6 +1813,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.35",
+      "api_version": "v4_35",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_35Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A root-only immediate opponent mate-reply veto should prevent the engine from selecting optimistic material or queen moves that allow direct checkmate on the opponent's next move.",
+        "A small root-only penalty for opponent checking replies with one to three legal evasions should reduce repeated forcing-check collapses like the latest Bh2+/Bg3+/Qh2+ blunder without broadening quiescence, extensions, move ordering, or static evaluation.",
+        "Keeping the threat scan outside recursive search should preserve most of v4.8's tuned node throughput while changing only final root move choice in tactically exposed positions."
+      ],
+      "summary": "Added a root score adjustment after each searched root move: if the opponent has an immediate legal checking mate, the move is demoted to a losing mate score; otherwise legal opponent checking replies with at most three evasions apply a bounded root-only penalty. Recursive search, quiescence, pruning thresholds, move ordering, evaluation, TT sizing, and public API shape are unchanged.",
+      "implementation_summary": "Added a root score adjustment after each searched root move: if the opponent has an immediate legal checking mate, the move is demoted to a losing mate score; otherwise legal opponent checking replies with at most three evasions apply a bounded root-only penalty. Recursive search, quiescence, pruning thresholds, move ordering, evaluation, TT sizing, and public API shape are unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 226,
+          "draws": 191,
+          "losses": 583,
+          "score": 321.5,
+          "score_rate": 0.3215,
+          "text": "C# v4.35 scored 321.5/1000 against Stockfish (1800 Elo): 226 wins, 191 draws, 583 losses, score rate 0.3215."
+        }
+      },
+      "limitations": []
     }
   ]
 }

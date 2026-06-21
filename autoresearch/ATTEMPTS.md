@@ -1434,3 +1434,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.4028`
 - average_positions_or_nodes: `6448.6039`
 - inferred_conclusion: `Rejected: the bounded queen/bishop king-contact danger term badly reduced score_rate to 0.4050 versus the approved v4.8 reference at 0.4795, with average nodes falling to 6448.60 from the roughly 7542-node seed baseline. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0350, so the regression is move-quality and throughput, not reliability. Compared with the approved blunder's Bh2+/Bg3+/Qh2+ queen-and-bishop mating net after optimistic Qd5, the current candidate's worst overturn still missed a mating attack but shifted to Qf6 allowing Rxc2+/Rxb2+/Rxa2+ and Qc2#. The static king-contact penalty did not reliably prevent exposed-king tactics and likely over-penalized or distorted many normal queen-present positions while adding repeated king-ring attack scans to evaluation. Future V4 work should avoid broad static king-ring danger terms on this branch; if targeting mate threats, prefer a much narrower direct-threat detector or root candidate veto for immediate opponent forcing checks, including rook/queen second-rank invasions, with explicit throughput protection.`
+
+## Attempt: 2026-06-21T05:13:02Z - v4.35
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.35`
+- version_bump: `minor`
+- hypotheses:
+  - `A root-only immediate opponent mate-reply veto should prevent the engine from selecting optimistic material or queen moves that allow direct checkmate on the opponent's next move.`
+  - `A small root-only penalty for opponent checking replies with one to three legal evasions should reduce repeated forcing-check collapses like the latest Bh2+/Bg3+/Qh2+ blunder without broadening quiescence, extensions, move ordering, or static evaluation.`
+  - `Keeping the threat scan outside recursive search should preserve most of v4.8's tuned node throughput while changing only final root move choice in tactically exposed positions.`
+- implementation_summary: `Added a root score adjustment after each searched root move: if the opponent has an immediate legal checking mate, the move is demoted to a losing mate score; otherwise legal opponent checking replies with at most three evasions apply a bounded root-only penalty. Recursive search, quiescence, pruning thresholds, move ordering, evaluation, TT sizing, and public API shape are unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `226/191/583`
+- score: `321.5`
+- score_rate: `0.3215`
+- average_plies: `104.6500`
+- average_processing_time_ms: `100.6130`
+- average_positions_or_nodes: `6479.4916`
+- inferred_conclusion: `Rejected: the root-only checking-threat scan badly regressed score_rate to 0.3215 versus the approved v4.8 reference at 0.4795, with average nodes falling to 6479.49 and no crash/illegal/timeout/harness failures. The change was stable but both too expensive and too distorting for root move choice. Compared with the approved seed blunder, where Qd5 allowed a bishop/queen repeated-check mating net ending in Qxf2#, the current candidate's worst overturn shifted to Ne3 at ply 68, scored +948, allowing Rh8+ at ply 69, forced Kg7, and Qh7#. The immediate-mate veto did not cover this mate-in-two pattern, while the bounded penalties for checking replies likely penalized many normal tactical positions and disrupted the tuned v4.8 balance. Future V4 work should avoid root-wide legal checking-threat scans and coarse evasion-count penalties; if mate threats are targeted again, they need a much narrower and cheaper detector for concrete forced mate motifs or a search-integrated verification that proves the threat, not a broad root heuristic.`
