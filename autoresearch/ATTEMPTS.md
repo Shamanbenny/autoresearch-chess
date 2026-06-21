@@ -1242,3 +1242,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.7322`
 - average_positions_or_nodes: `7610.7792`
 - inferred_conclusion: `Rejected: the 8 centipawn non-pawn-material tempo bonus increased average nodes slightly versus v4.8 but reduced score_rate to 0.4720 against the approved 0.4795 reference, with improvement_lcb95=-0.0413. The change was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0320, but the added initiative bias appears to distort move choice more than it helps. Future V4 attempts should avoid generic tempo tuning on this path and prioritize more concrete tactical or search-control improvements that preserve v4.8's quiescence budget behavior.`
+
+## Attempt: 2026-06-21T00:40:06Z - v4.26
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.26`
+- version_bump: `minor`
+- hypotheses:
+  - `Exempting existing killer moves from late-move reduction should let previously observed quiet beta-cutoff moves receive full-depth verification when they appear later in move order.`
+  - `Exempting high quiet-history moves from late-move reduction should improve tactical search allocation at 100ms without changing evaluation or quiescence behavior.`
+- implementation_summary: `Changed late-move reduction so quiet moves matching the current ply's primary/secondary killer or reaching at least half the quiet-history cap are searched at the normal child depth instead of the reduced probe depth.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `374/202/424`
+- score: `475.0`
+- score_rate: `0.4750`
+- average_plies: `99.3380`
+- average_processing_time_ms: `101.0961`
+- average_positions_or_nodes: `7375.8620`
+- inferred_conclusion: `Rejected: exempting killer and high quiet-history moves from late-move reduction reduced score_rate to 0.4750 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0377. The change was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0440, but average nodes fell to 7375.86, suggesting the extra full-depth quiet searches cost budget without improving move quality. Future V4 work should avoid broad LMR exemptions based only on killer/history signals; any LMR tuning should be more selective or paired with evidence that it preserves throughput.`
