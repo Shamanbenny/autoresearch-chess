@@ -1639,3 +1639,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.0258`
 - average_positions_or_nodes: `7340.8094`
 - inferred_conclusion: `Approved: v4.43 scored 0.5020 versus the v4.41 approved reference at 0.4965, with zero evaluator failures and max_plies_rate=0.0400. The V4.14/V4.18 bishop-pair signal plus V4.16 quiet-futility static-eval cache transferred to the stronger V4.41 baseline when kept separate from V4.42's broader root-capture verification, despite average nodes dropping to 7340.81 from v4.41's 7435.14. Comparing blunders, the latest approved V4.41 worst overturn was the high-scoring capture ...Nxf4 at ply 52, allowing Qxh7+ and a forced mate sequence; v4.43's worst overturn shifted to ...Kg8 at ply 52, scored +1188, allowing Qh6 and another forced mate sequence. This suggests the approved gain came from modest evaluation/search-budget quality rather than solving the forcing-check horizon weakness. Future work should preserve the bishop-pair bonus and quiet-futility eval cache, but still treat exposed-king queen/bishop/rook mate nets as the main remaining horizon flaw; avoid broad root-capture verification unless a much tighter overhead control is found.`
+
+## Attempt: 2026-06-21T08:39:58Z - v4.44
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.43`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_43Engine.cs`
+- candidate_version: `v4.44`
+- version_bump: `minor`
+- hypotheses:
+  - `The latest v4.43 blunder is a high-scoring quiet root king move, ...Kg8, that passes the generic quiet-move verification floor while allowing Qh6 and a forced mate; quiet king moves need a stricter proof of retained advantage than ordinary quiet moves.`
+  - `Applying a deeper zero-window verification only to high-scoring quiet root king moves should catch exposed-king horizon failures without repeating rejected broad capture verification, check generation, king-danger evaluation, or pruning guards.`
+  - `Sharing the existing two-candidate high-score quiet verification cap should keep the added overhead rare while preserving the approved v4.43 bishop-pair, quiet-futility cache, adaptive aspiration, and ordinary quiet-root verification behavior.`
+- implementation_summary: `Extended the existing high-score quiet root verification path so quiet king moves use a stricter 700cp verification floor and one additional verification ply, while ordinary quiet moves keep the v4.43 250cp one-extra-ply floor. Added a small IsKingMove helper; evaluation, move ordering scores, quiescence, pruning thresholds, TT sizing, capture handling, and public API shape are unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `396/171/433`
+- score: `481.5`
+- score_rate: `0.4815`
+- average_plies: `95.8710`
+- average_processing_time_ms: `100.9634`
+- average_positions_or_nodes: `7548.7870`
+- inferred_conclusion: `Rejected: v4.44 scored 0.4815 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0400. Average nodes increased to 7548.79 from v4.43's 7340.81, so the stricter quiet-king verification did not fail from obvious throughput loss, but it still degraded move quality or root stability. The approved blunder was the quiet king move ...Kg8 at ply 52, scored +1188, allowing Qh6 and a forced mate sequence; v4.44's worst overturn shifted to the pawn capture hxg4 at ply 47, scored +1055, allowing ...Qxc4 and then a forced mate ending ...Qxa2#. This means the targeted king-move verification may have moved the specific failure but did not solve the broader exposed-king queen-invasion horizon problem, and adding stricter verification for only king moves is too narrow to justify its search-shape disturbance. Future attempts should not further tighten root verification by move type unless backed by a cheaper concrete threat detector; focus instead on recognizing queen invasion/mate threats around trapped kings or improving root stability without adding more selective verification overhead.`

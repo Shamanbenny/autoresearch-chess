@@ -2063,6 +2063,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.44",
+      "api_version": "v4_44",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_44Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "The latest v4.43 blunder is a high-scoring quiet root king move, ...Kg8, that passes the generic quiet-move verification floor while allowing Qh6 and a forced mate; quiet king moves need a stricter proof of retained advantage than ordinary quiet moves.",
+        "Applying a deeper zero-window verification only to high-scoring quiet root king moves should catch exposed-king horizon failures without repeating rejected broad capture verification, check generation, king-danger evaluation, or pruning guards.",
+        "Sharing the existing two-candidate high-score quiet verification cap should keep the added overhead rare while preserving the approved v4.43 bishop-pair, quiet-futility cache, adaptive aspiration, and ordinary quiet-root verification behavior."
+      ],
+      "summary": "Extended the existing high-score quiet root verification path so quiet king moves use a stricter 700cp verification floor and one additional verification ply, while ordinary quiet moves keep the v4.43 250cp one-extra-ply floor. Added a small IsKingMove helper; evaluation, move ordering scores, quiescence, pruning thresholds, TT sizing, capture handling, and public API shape are unchanged.",
+      "implementation_summary": "Extended the existing high-score quiet root verification path so quiet king moves use a stricter 700cp verification floor and one additional verification ply, while ordinary quiet moves keep the v4.43 250cp one-extra-ply floor. Added a small IsKingMove helper; evaluation, move ordering scores, quiescence, pruning thresholds, TT sizing, capture handling, and public API shape are unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 396,
+          "draws": 171,
+          "losses": 433,
+          "score": 481.5,
+          "score_rate": 0.4815,
+          "text": "C# v4.44 scored 481.5/1000 against Stockfish (1800 Elo): 396 wins, 171 draws, 433 losses, score rate 0.4815."
+        }
+      },
+      "limitations": []
     }
   ]
 }
