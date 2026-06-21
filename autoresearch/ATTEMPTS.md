@@ -1685,3 +1685,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.2325`
 - average_positions_or_nodes: `7429.5053`
 - inferred_conclusion: `Rejected: v4.45 scored 0.4840 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0330. Average nodes rose to 7429.51 from v4.43's 7340.81, so the adaptive quiet-root verification floor was not an obvious throughput failure, but it degraded aggregate move quality. Comparing blunders, the approved seed's worst overturn was the quiet king move ...Kg8 at ply 52, scored +1188, allowing Qh6 and a queen/bishop forced mate. The current candidate's worst overturn shifted to the quiet rook move Rfd1 at ply 53, scored +2083 after a promoted-queen/material-winning sequence, allowing ...Qxf2+ and a queen/rook mating net ending ...Rg4#. This means the stricter retained-advantage floor did not reliably catch high-score quiet horizon failures; the verification still accepted or steered into positions where opponent forcing checks near the king dominate. Future attempts should avoid further tightening this root verification floor or adding move-type-specific verification. The remaining issue points to exposed-king forcing-check and queen-invasion visibility, but prior broad threat scans, check extensions, quiet-check ordering/quiescence, king-danger eval, and capture verification were too costly or distorting, so promising work should focus on cheaper root stability/search allocation or a very narrow concrete mate-threat detector that replaces work rather than adding broad probes.`
+
+## Attempt: 2026-06-21T09:21:37Z - v4.46
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.43`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_43Engine.cs`
+- candidate_version: `v4.46`
+- version_bump: `minor`
+- hypotheses:
+  - `A narrow back-rank king exposure penalty for queen+bishop attacking material can reduce optimistic exposed-king choices like the latest ...Kg8 blunder without broad checking move generation or extra root verification probes.`
+  - `Gating the penalty to home-rank kings with missing wing shelter and attacked corner/shield squares should target the recurring queen-bishop mating-net motif while preserving v4.43's approved search shape.`
+  - `Scaling the penalty out in late endgames should avoid disrupting v4.43's existing endgame conversion and draw behavior.`
+- implementation_summary: `Added a cheap BackRankMatingExposurePenalty to evaluation. It applies only when a home-rank king faces enemy queen+bishop material, uses already collected pawn-file and bishop/queen counts, penalizes missing wing/shield pawns plus attacked corner and shield squares, and tapers the penalty by endgame weight. Search, pruning, move ordering, TT behavior, root verification, and public API shape are unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `391/164/445`
+- score: `473.0`
+- score_rate: `0.4730`
+- average_plies: `96.7760`
+- average_processing_time_ms: `101.1541`
+- average_positions_or_nodes: `7367.1767`
+- inferred_conclusion: `Rejected: v4.46 scored 0.4730 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0340. Average nodes were 7367.18, close to v4.43's 7340.81, so the regression was not an obvious throughput failure; the static back-rank exposure penalty degraded aggregate move choice. Comparing blunders, the approved seed's worst overturn was the home-rank quiet king move ...Kg8 at ply 52, scored +1188, allowing Qh6 and a queen/bishop forced mate. The current candidate's worst overturn shifted to ...Qxg5 at ply 52, scored +1428, after the king had already moved to h7; White recaptured fxg5 and the line collapsed through ...Bg3, Rh4+, and Rh8#. This means the added penalty was too narrow to catch the broader exposed-king forcing-line issue and likely distorted evaluation in ordinary queen+bishop positions. Future attempts should avoid more static king-exposure penalties of this kind, as well as previously rejected broad check scans or stricter root verification, and instead look for cheaper root stability/search-allocation ideas or a concrete tactical detector that covers forcing checking sequences after king displacement, not just home-rank shelter.`

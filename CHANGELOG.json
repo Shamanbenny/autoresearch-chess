@@ -2119,6 +2119,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.46",
+      "api_version": "v4_46",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_46Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A narrow back-rank king exposure penalty for queen+bishop attacking material can reduce optimistic exposed-king choices like the latest ...Kg8 blunder without broad checking move generation or extra root verification probes.",
+        "Gating the penalty to home-rank kings with missing wing shelter and attacked corner/shield squares should target the recurring queen-bishop mating-net motif while preserving v4.43's approved search shape.",
+        "Scaling the penalty out in late endgames should avoid disrupting v4.43's existing endgame conversion and draw behavior."
+      ],
+      "summary": "Added a cheap BackRankMatingExposurePenalty to evaluation. It applies only when a home-rank king faces enemy queen+bishop material, uses already collected pawn-file and bishop/queen counts, penalizes missing wing/shield pawns plus attacked corner and shield squares, and tapers the penalty by endgame weight. Search, pruning, move ordering, TT behavior, root verification, and public API shape are unchanged.",
+      "implementation_summary": "Added a cheap BackRankMatingExposurePenalty to evaluation. It applies only when a home-rank king faces enemy queen+bishop material, uses already collected pawn-file and bishop/queen counts, penalizes missing wing/shield pawns plus attacked corner and shield squares, and tapers the penalty by endgame weight. Search, pruning, move ordering, TT behavior, root verification, and public API shape are unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 391,
+          "draws": 164,
+          "losses": 445,
+          "score": 473.0,
+          "score_rate": 0.473,
+          "text": "C# v4.46 scored 473.0/1000 against Stockfish (1800 Elo): 391 wins, 164 draws, 445 losses, score rate 0.4730."
+        }
+      },
+      "limitations": []
     }
   ]
 }
