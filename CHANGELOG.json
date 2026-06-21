@@ -1841,6 +1841,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.36",
+      "api_version": "v4_36",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_36Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Verified null-move pruning at depth 4+ will preserve most of v4.8's throughput while reducing false fail-high cutoffs in tactical positions where passing a move hides forcing checks or mate threats.",
+        "Keeping the verification search zero-window and no-null keeps the change search-integrated and narrower than rejected root-wide checking-threat scans, check extensions, or static king-danger terms.",
+        "Only verifying deeper null-move cutoffs should avoid perturbing the tuned shallow futility, quiet-check protection, move ordering, and quiescence budget that prior attempts showed are sensitive."
+      ],
+      "summary": "Added a depth-gated verified null-move pruning path: null-move cutoffs at remaining depth 4 or more now require a same-node zero-window no-null verification search before returning beta; shallower null cutoffs and all evaluation, move ordering, quiescence, futility, LMR, TT sizing, and public API behavior remain unchanged.",
+      "implementation_summary": "Added a depth-gated verified null-move pruning path: null-move cutoffs at remaining depth 4 or more now require a same-node zero-window no-null verification search before returning beta; shallower null cutoffs and all evaluation, move ordering, quiescence, futility, LMR, TT sizing, and public API behavior remain unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 358,
+          "draws": 180,
+          "losses": 462,
+          "score": 448.0,
+          "score_rate": 0.448,
+          "text": "C# v4.36 scored 448.0/1000 against Stockfish (1800 Elo): 358 wins, 180 draws, 462 losses, score rate 0.4480."
+        }
+      },
+      "limitations": []
     }
   ]
 }

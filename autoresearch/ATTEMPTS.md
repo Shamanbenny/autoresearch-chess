@@ -1457,3 +1457,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.6130`
 - average_positions_or_nodes: `6479.4916`
 - inferred_conclusion: `Rejected: the root-only checking-threat scan badly regressed score_rate to 0.3215 versus the approved v4.8 reference at 0.4795, with average nodes falling to 6479.49 and no crash/illegal/timeout/harness failures. The change was stable but both too expensive and too distorting for root move choice. Compared with the approved seed blunder, where Qd5 allowed a bishop/queen repeated-check mating net ending in Qxf2#, the current candidate's worst overturn shifted to Ne3 at ply 68, scored +948, allowing Rh8+ at ply 69, forced Kg7, and Qh7#. The immediate-mate veto did not cover this mate-in-two pattern, while the bounded penalties for checking replies likely penalized many normal tactical positions and disrupted the tuned v4.8 balance. Future V4 work should avoid root-wide legal checking-threat scans and coarse evasion-count penalties; if mate threats are targeted again, they need a much narrower and cheaper detector for concrete forced mate motifs or a search-integrated verification that proves the threat, not a broad root heuristic.`
+
+## Attempt: 2026-06-21T05:34:15Z - v4.36
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.36`
+- version_bump: `minor`
+- hypotheses:
+  - `Verified null-move pruning at depth 4+ will preserve most of v4.8's throughput while reducing false fail-high cutoffs in tactical positions where passing a move hides forcing checks or mate threats.`
+  - `Keeping the verification search zero-window and no-null keeps the change search-integrated and narrower than rejected root-wide checking-threat scans, check extensions, or static king-danger terms.`
+  - `Only verifying deeper null-move cutoffs should avoid perturbing the tuned shallow futility, quiet-check protection, move ordering, and quiescence budget that prior attempts showed are sensitive.`
+- implementation_summary: `Added a depth-gated verified null-move pruning path: null-move cutoffs at remaining depth 4 or more now require a same-node zero-window no-null verification search before returning beta; shallower null cutoffs and all evaluation, move ordering, quiescence, futility, LMR, TT sizing, and public API behavior remain unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `358/180/462`
+- score: `448.0`
+- score_rate: `0.4480`
+- average_plies: `97.6370`
+- average_processing_time_ms: `100.9965`
+- average_positions_or_nodes: `7317.9397`
+- inferred_conclusion: `Rejected: verified null-move pruning reduced score_rate to 0.4480 versus the approved v4.8 reference at 0.4795, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0360, but average nodes fell to 7317.94 from the approved seed's roughly 7542-node baseline. The extra zero-window verification appears too expensive or search-shape disruptive for this tuned 100ms branch. Comparing blunders, the approved seed missed a king-side bishop/queen checking net after Qd5, while v4.36's worst overturn shifted to an optimistic Rxc8 at ply 72, scored +1660, allowing a forcing queen-check sequence Qa5+/Qa7+/Qa4+/Qa6#. This points to a broader forcing-check horizon and move-selection issue rather than specifically false null-move fail-highs. Future V4 attempts should avoid verified null-move variants here and should not spend more budget on broad threat scans or check extensions; any mate-threat work needs a cheaper, highly targeted mechanism that preserves node throughput and handles forcing queen-check repetitions without distorting normal search.`
