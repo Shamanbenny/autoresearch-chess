@@ -20,7 +20,7 @@
     "approved_reference_score_source": "autoresearch/approved_logs/V4_39Engine-8c16ab8-result.csv",
     "notes": "Added an InitialAspirationWindow helper that keeps the existing 40cp root aspiration window near equal positions, but widens it by up to 160cp based on the previous completed iteration's absolute evaluation before aspiration re-search begins. Search semantics, evaluation, move ordering, quiescence, pruning, TT sizing, and public API shape are otherwise unchanged."
   },
-  "next_candidate_version": "v4.40",
+  "next_candidate_version": "v4.41",
   "agent": {
     "max_hypotheses_per_experiment": 3,
     "codex_turn_timeout_minutes": 15

@@ -1549,3 +1549,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.0608`
 - average_positions_or_nodes: `7401.4370`
 - inferred_conclusion: `Approved: adaptive root aspiration windows improved score_rate to 0.4885 versus the approved v4.8 reference at 0.4795, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0390. Average nodes were 7401.44, slightly below v4.8's roughly 7542-node baseline, but the wider high-score window likely reduced enough volatile root re-search churn or stabilized root choices to overcome that small throughput drop. The latest approved blunder was White Qd5 at ply 55, scored +1028, allowing Bh2+/Bg3+/Qh2+/Qxf2#; v4.39's worst overturn shifted to White f4 at ply 57, scored +1014, allowing Bd4+/Qg3+/Bxf2 and Qg1#. This means the branch still has a forcing-check horizon weakness around exposed kings and queen/bishop coordination, but prior direct threat scans, check extensions, quiescence broadening, and king-danger eval were too costly or distorting. Future V4 work should preserve the v4.39 adaptive aspiration policy and prefer similarly cheap search-allocation or root-stability changes over adding new broad tactical scans.`
+
+## Attempt: 2026-06-21T06:58:46Z - v4.40
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.39`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_39Engine.cs`
+- candidate_version: `v4.40`
+- version_bump: `minor`
+- hypotheses:
+  - `The latest blunder shows a quiet checking reply (Bd4+) starting a forced mate after a superficially winning move; prioritizing quiet checking moves near the search frontier should expose these tactical refutations earlier without broadening quiescence or adding static eval overhead.`
+- implementation_summary: `Added a shallow move-ordering bonus for quiet moves that give check at remaining depth 4 or less, keeping captures, TT moves, existing pruning, and evaluation semantics unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `355/186/459`
+- score: `448.0`
+- score_rate: `0.4480`
+- average_plies: `97.9990`
+- average_processing_time_ms: `102.2701`
+- average_positions_or_nodes: `5837.6401`
+- inferred_conclusion: `Rejected at 0.4480 versus the 0.4885 approved seed. Comparing blunders, the prior v4.39 overturn was f4 allowing the quiet checking refutation Bd4+, while v4.40's worst overturn is a different queen-check mate sequence after Qxa7 allowed Qg4+. The quiet-check ordering hypothesis did not remove the underlying horizon/king-safety failure, and the evaluator's low average node count (5837.64) suggests the added MoveGivesCheck make/unmake work during shallow move ordering cost too much throughput. Future attempts should not score every shallow quiet by speculative check detection; prefer cheaper targeted king-danger detection at root/near-root, selective verification of candidate moves that expose the king, or a diagnosed time/search allocation fix that preserves node rate.`

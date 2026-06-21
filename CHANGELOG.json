@@ -1953,6 +1953,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.40",
+      "api_version": "v4_40",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_40Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "The latest blunder shows a quiet checking reply (Bd4+) starting a forced mate after a superficially winning move; prioritizing quiet checking moves near the search frontier should expose these tactical refutations earlier without broadening quiescence or adding static eval overhead."
+      ],
+      "summary": "Added a shallow move-ordering bonus for quiet moves that give check at remaining depth 4 or less, keeping captures, TT moves, existing pruning, and evaluation semantics unchanged.",
+      "implementation_summary": "Added a shallow move-ordering bonus for quiet moves that give check at remaining depth 4 or less, keeping captures, TT moves, existing pruning, and evaluation semantics unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 355,
+          "draws": 186,
+          "losses": 459,
+          "score": 448.0,
+          "score_rate": 0.448,
+          "text": "C# v4.40 scored 448.0/1000 against Stockfish (1800 Elo): 355 wins, 186 draws, 459 losses, score rate 0.4480."
+        }
+      },
+      "limitations": []
     }
   ]
 }
