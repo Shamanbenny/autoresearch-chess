@@ -1593,3 +1593,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.0999`
 - average_positions_or_nodes: `7435.1376`
 - inferred_conclusion: `Approved: v4.41 raised score_rate to 0.4965 versus the v4.39 approved seed at 0.4885, with zero evaluator failures and max_plies_rate=0.0370. Average nodes also improved slightly to 7435.14 versus v4.39's 7401.44, so the bounded root verification did not pay the throughput penalty seen in broader checking-threat and quiet-check-ordering attempts. Comparing blunders, v4.39's worst overturn was the quiet root move f4, scored +1014, allowing Bd4+ and a queen/bishop mate net; v4.41's remaining worst overturn shifted to the capture Nxf4, scored +1611, allowing Qxh7+ and a forced mate sequence. This supports the hypothesis that selective root verification of high-scoring quiet moves can improve root stability without distorting the whole search, but the remaining failure mode is still a forcing-check horizon issue, now outside the quiet-move gate. Future work should preserve this bounded root-verification policy and, if extending it, consider very narrow treatment of high-scoring root captures that expose the king rather than broad check generation, static king-danger evaluation, or quiescence broadening.`
+
+## Attempt: 2026-06-21T07:52:51Z - v4.42
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.41`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_41Engine.cs`
+- candidate_version: `v4.42`
+- version_bump: `minor`
+- hypotheses:
+  - `Restoring the V4.14/V4.18 24 centipawn bishop-pair bonus should recover a previously directionally positive minor-piece evaluation signal under the current raw approval gate without search overhead.`
+  - `Passing the per-node static evaluation by reference into quiet futility pruning should preserve V4.16's intended repeated-evaluation cache and recover small 100ms search budget when reverse futility has not already populated the static eval.`
+  - `Extending the existing high-score root verification from only quiet moves to quiet or capturing root moves should reduce optimistic tactical horizon misses like the latest ...Nxf4 into Qxh7+ mate overturn while limiting overhead to two high-score candidates.`
+- implementation_summary: `Added a 24 centipawn bishop-pair positional bonus, changed quiet futility pruning to populate and reuse the nullable static eval by reference within a node, and broadened high-score root move verification to cover captures as well as quiet moves.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `398/172/430`
+- score: `484.0`
+- score_rate: `0.4840`
+- average_plies: `96.7520`
+- average_processing_time_ms: `101.2665`
+- average_positions_or_nodes: `7382.6685`
+- inferred_conclusion: `Rejected: v4.42 scored 0.4840 versus the approved v4.41 reference at 0.4965, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0400. The V4.14/V4.18 bishop-pair signal plus V4.16 quiet-futility eval caching did not transfer to the stronger v4.41 baseline, and average nodes dropped to 7382.67, indicating the added high-score root verification likely cost useful 100ms search budget without enough tactical benefit. The latest approved blunder was a capture horizon miss at ply 52 (...Nxf4, +1611) allowing Qxh7+ and immediate mate collapse; the current candidate's worst overturn moved to a different king-safety line at ply 64 (...Kg8, +1445) after Qh4+, then Qh6 forced a mate sequence and the next candidate search returned -999996. This suggests the capture-only broadening did not address the underlying mate-threat visibility problem; future work should avoid stacking small bishop-pair/static-cache tweaks on this baseline and instead target explicit checking-threat or king-safety search extensions/ordering with tighter overhead control.`

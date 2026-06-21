@@ -20,7 +20,7 @@
     "approved_reference_score_source": "autoresearch/approved_logs/V4_41Engine-a8bfe1e-result.csv",
     "notes": "Added a root-only high-score quiet-move verification path: when a potential root-best quiet move scores at least 700cp at depth 3 or deeper, the engine runs one extra-ply zero-window verification against a 250cp winning floor and demotes the move only if that probe fails low. The verification is capped at two quiet root-best candidates per root iteration; evaluation, quiescence, pruning thresholds, move ordering scores, TT sizing, adaptive aspiration windows, and public API shape are otherwise unchanged."
   },
-  "next_candidate_version": "v4.42",
+  "next_candidate_version": "v4.43",
   "agent": {
     "max_hypotheses_per_experiment": 3,
     "codex_turn_timeout_minutes": 15

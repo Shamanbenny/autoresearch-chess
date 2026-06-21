@@ -2007,6 +2007,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.42",
+      "api_version": "v4_42",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_42Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Restoring the V4.14/V4.18 24 centipawn bishop-pair bonus should recover a previously directionally positive minor-piece evaluation signal under the current raw approval gate without search overhead.",
+        "Passing the per-node static evaluation by reference into quiet futility pruning should preserve V4.16's intended repeated-evaluation cache and recover small 100ms search budget when reverse futility has not already populated the static eval.",
+        "Extending the existing high-score root verification from only quiet moves to quiet or capturing root moves should reduce optimistic tactical horizon misses like the latest ...Nxf4 into Qxh7+ mate overturn while limiting overhead to two high-score candidates."
+      ],
+      "summary": "Added a 24 centipawn bishop-pair positional bonus, changed quiet futility pruning to populate and reuse the nullable static eval by reference within a node, and broadened high-score root move verification to cover captures as well as quiet moves.",
+      "implementation_summary": "Added a 24 centipawn bishop-pair positional bonus, changed quiet futility pruning to populate and reuse the nullable static eval by reference within a node, and broadened high-score root move verification to cover captures as well as quiet moves.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 398,
+          "draws": 172,
+          "losses": 430,
+          "score": 484.0,
+          "score_rate": 0.484,
+          "text": "C# v4.42 scored 484.0/1000 against Stockfish (1800 Elo): 398 wins, 172 draws, 430 losses, score rate 0.4840."
+        }
+      },
+      "limitations": []
     }
   ]
 }
