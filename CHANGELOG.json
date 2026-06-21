@@ -2203,6 +2203,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.49",
+      "api_version": "v4_49",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_49Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "The latest v4.43 blunder is another exposed-king queen/bishop forcing-check collapse; null-move pruning may be letting cramped-king positions look falsely stable because the side to move can effectively pass despite urgent queen threats.",
+        "Disabling null-move pruning only when the opponent still has a queen and the moving king has at most two safe adjacent squares should expose more forcing replies without broad check generation, root verification changes, or static king-safety evaluation.",
+        "Keeping the guard limited to queen-on-board cramped-king nodes should preserve most of v4.43's approved search shape, bishop-pair evaluation, quiet-futility cache, aspiration settings, and quiet-root verification behavior."
+      ],
+      "summary": "Added a narrow null-move pruning guard: null moves are skipped when the opponent has a queen and the side to move's king has two or fewer safe adjacent destination squares. Added self-contained HasQueen and SafeKingMobility helpers using existing board attack logic; no public API, evaluation, move ordering, root verification, aspiration, quiescence, or TT changes.",
+      "implementation_summary": "Added a narrow null-move pruning guard: null moves are skipped when the opponent has a queen and the side to move's king has two or fewer safe adjacent destination squares. Added self-contained HasQueen and SafeKingMobility helpers using existing board attack logic; no public API, evaluation, move ordering, root verification, aspiration, quiescence, or TT changes.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 404,
+          "draws": 158,
+          "losses": 438,
+          "score": 483.0,
+          "score_rate": 0.483,
+          "text": "C# v4.49 scored 483.0/1000 against Stockfish (1800 Elo): 404 wins, 158 draws, 438 losses, score rate 0.4830."
+        }
+      },
+      "limitations": []
     }
   ]
 }

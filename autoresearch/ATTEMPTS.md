@@ -1754,3 +1754,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.0248`
 - average_positions_or_nodes: `7286.6547`
 - inferred_conclusion: `Rejected: v4.48 scored 0.4690 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0420. Average nodes fell to 7286.65 from v4.43's 7340.81, so the 1cp queen mobility term added evaluation cost and, more importantly, degraded move quality. Comparing blunders, the approved seed's worst overturn was ...Kg8 at ply 52, scored +1188, allowing Qh6 and a forced queen/bishop mate. The current candidate's worst overturn shifted earlier to White e4 at ply 37, scored +761, after which ...fxe4 and ...Qc2+ began a forced checking sequence with queen, rook, knight, and mating ...Qc2#. This suggests queen mobility encouraged or tolerated overextended queen-heavy material play while still missing opponent forcing checks near an exposed king. Future attempts should avoid generic queen activity bonuses and further broad static activity/king-safety terms; preserve v4.43's approved search/eval core and look for lower-overhead root stability or a very narrow concrete mate-threat mechanism that does not reward loose queen invasions or add repeated ray scans.`
+
+## Attempt: 2026-06-21T10:24:32Z - v4.49
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.43`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_43Engine.cs`
+- candidate_version: `v4.49`
+- version_bump: `minor`
+- hypotheses:
+  - `The latest v4.43 blunder is another exposed-king queen/bishop forcing-check collapse; null-move pruning may be letting cramped-king positions look falsely stable because the side to move can effectively pass despite urgent queen threats.`
+  - `Disabling null-move pruning only when the opponent still has a queen and the moving king has at most two safe adjacent squares should expose more forcing replies without broad check generation, root verification changes, or static king-safety evaluation.`
+  - `Keeping the guard limited to queen-on-board cramped-king nodes should preserve most of v4.43's approved search shape, bishop-pair evaluation, quiet-futility cache, aspiration settings, and quiet-root verification behavior.`
+- implementation_summary: `Added a narrow null-move pruning guard: null moves are skipped when the opponent has a queen and the side to move's king has two or fewer safe adjacent destination squares. Added self-contained HasQueen and SafeKingMobility helpers using existing board attack logic; no public API, evaluation, move ordering, root verification, aspiration, quiescence, or TT changes.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `404/158/438`
+- score: `483.0`
+- score_rate: `0.4830`
+- average_plies: `97.4060`
+- average_processing_time_ms: `101.0233`
+- average_positions_or_nodes: `7298.8669`
+- inferred_conclusion: `Rejected: v4.49 scored 0.4830 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0320. Average nodes fell to 7298.87 from v4.43's 7340.81, so the queen-plus-cramped-king null-move guard cost some search budget and did not improve aggregate move quality. Comparing blunders, the approved seed's worst overturn was ...Kg8 at ply 52, scored +1188, allowing Qh6 and a queen/bishop mating sequence; v4.49's worst overturn shifted much later to White Bc3 at ply 101, scored +1060, allowing ...g3+ and a forced promotion/checkmate line ending ...Qh5#. This means the guard changed the failure surface from a middlegame queen/bishop net to a late queen-and-passed-pawn forcing sequence, but did not address the underlying horizon issue around forcing checks near an exposed king. Future attempts should not continue broadening null-move suppression by king mobility or queen presence; it appears too blunt and slightly reduces throughput. The remaining promising direction is a more concrete, cheaper detector for immediate forcing checking/promotion threats, or a search allocation change that replaces existing work rather than adding another defensive guard.`
