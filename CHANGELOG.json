@@ -2175,6 +2175,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.48",
+      "api_version": "v4_48",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_48Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A tiny queen mobility term can improve queen activity and queen-invasion move choice in the recurring tactical middlegames without adding search probes, check generation, or pruning changes.",
+        "Reusing the existing ray-mobility evaluator with a 1 centipawn per reachable queen square scale should keep evaluation overhead low while adding a more concrete activity signal than broad king-safety penalties.",
+        "Leaving v4.43's approved adaptive aspiration, quiet-root verification, bishop-pair bonus, quiet-futility eval cache, pruning, TT size, and quiescence behavior unchanged should avoid the regressions seen in recent broad tactical-search experiments."
+      ],
+      "summary": "Added a 1cp-per-square queen mobility evaluation term using the existing ray-mobility counting style. Search behavior, pruning thresholds, quiescence, root verification, aspiration settings, TT sizing, public API shape, bishop-pair scoring, and passed-pawn logic remain unchanged.",
+      "implementation_summary": "Added a 1cp-per-square queen mobility evaluation term using the existing ray-mobility counting style. Search behavior, pruning thresholds, quiescence, root verification, aspiration settings, TT sizing, public API shape, bishop-pair scoring, and passed-pawn logic remain unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 381,
+          "draws": 176,
+          "losses": 443,
+          "score": 469.0,
+          "score_rate": 0.469,
+          "text": "C# v4.48 scored 469.0/1000 against Stockfish (1800 Elo): 381 wins, 176 draws, 443 losses, score rate 0.4690."
+        }
+      },
+      "limitations": []
     }
   ]
 }

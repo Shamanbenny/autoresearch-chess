@@ -1731,3 +1731,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.2427`
 - average_positions_or_nodes: `7446.3122`
 - inferred_conclusion: `Rejected: v4.47 scored 0.4915 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0350. Average nodes rose to 7446.31 from v4.43's 7340.81, so the wider high-score aspiration window did buy some throughput or reduce re-search churn, but it degraded aggregate move choice. Comparing blunders, the approved seed's worst overturn was the quiet king move ...Kg8 at ply 52, scored +1188, allowing Qh6 and a queen/bishop mating sequence. The current candidate's worst overturn shifted to the checking queen move ...Qd6+ at ply 58, scored +1898, after which Kg1 exposed a forced line with ...Qg3+ and eventual Qg7#. This indicates the aspiration retune did not solve the exposed-king forcing-check horizon flaw; widening volatile root windows further than v4.39/v4.43 likely changes root stability in harmful ways despite slightly higher node counts. Future attempts should preserve v4.43's aspiration settings and avoid more aspiration widening, stricter root verification, broad check scans, or static king-exposure penalties unless a very narrow concrete mate-threat detector can replace existing work rather than add search distortion.`
+
+## Attempt: 2026-06-21T10:03:33Z - v4.48
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.43`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_43Engine.cs`
+- candidate_version: `v4.48`
+- version_bump: `minor`
+- hypotheses:
+  - `A tiny queen mobility term can improve queen activity and queen-invasion move choice in the recurring tactical middlegames without adding search probes, check generation, or pruning changes.`
+  - `Reusing the existing ray-mobility evaluator with a 1 centipawn per reachable queen square scale should keep evaluation overhead low while adding a more concrete activity signal than broad king-safety penalties.`
+  - `Leaving v4.43's approved adaptive aspiration, quiet-root verification, bishop-pair bonus, quiet-futility eval cache, pruning, TT size, and quiescence behavior unchanged should avoid the regressions seen in recent broad tactical-search experiments.`
+- implementation_summary: `Added a 1cp-per-square queen mobility evaluation term using the existing ray-mobility counting style. Search behavior, pruning thresholds, quiescence, root verification, aspiration settings, TT sizing, public API shape, bishop-pair scoring, and passed-pawn logic remain unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `381/176/443`
+- score: `469.0`
+- score_rate: `0.4690`
+- average_plies: `97.9530`
+- average_processing_time_ms: `101.0248`
+- average_positions_or_nodes: `7286.6547`
+- inferred_conclusion: `Rejected: v4.48 scored 0.4690 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0420. Average nodes fell to 7286.65 from v4.43's 7340.81, so the 1cp queen mobility term added evaluation cost and, more importantly, degraded move quality. Comparing blunders, the approved seed's worst overturn was ...Kg8 at ply 52, scored +1188, allowing Qh6 and a forced queen/bishop mate. The current candidate's worst overturn shifted earlier to White e4 at ply 37, scored +761, after which ...fxe4 and ...Qc2+ began a forced checking sequence with queen, rook, knight, and mating ...Qc2#. This suggests queen mobility encouraged or tolerated overextended queen-heavy material play while still missing opponent forcing checks near an exposed king. Future attempts should avoid generic queen activity bonuses and further broad static activity/king-safety terms; preserve v4.43's approved search/eval core and look for lower-overhead root stability or a very narrow concrete mate-threat mechanism that does not reward loose queen invasions or add repeated ray scans.`
