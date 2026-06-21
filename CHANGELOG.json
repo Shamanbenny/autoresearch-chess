@@ -2091,6 +2091,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.45",
+      "api_version": "v4_45",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_45Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "High-score quiet root moves that claim a large advantage should prove more than the fixed 250cp retained edge used by v4.43, because the latest blunder's ...Kg8 still passed that weak floor while allowing Qh6 and a forced mate.",
+        "Making the quiet-root verification floor proportional to the searched score, capped at a moderate 520cp, may catch optimistic exposed-king horizon moves without v4.44's extra verification ply or king-move special case.",
+        "Keeping the existing two-candidate cap, quiet-only gate, and one-ply-deeper zero-window probe should preserve v4.43's successful search shape better than broad capture verification, check scans, or static king-danger terms."
+      ],
+      "summary": "Changed the existing high-score quiet root verification to use an adaptive retained-advantage floor: max 520cp, min 250cp, equal to half the candidate move score within that range. The verification remains quiet-only, capped at two root candidates per iteration, and uses the existing search depth with no extra move generation, evaluation terms, pruning changes, TT changes, or public API changes.",
+      "implementation_summary": "Changed the existing high-score quiet root verification to use an adaptive retained-advantage floor: max 520cp, min 250cp, equal to half the candidate move score within that range. The verification remains quiet-only, capped at two root candidates per iteration, and uses the existing search depth with no extra move generation, evaluation terms, pruning changes, TT changes, or public API changes.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 396,
+          "draws": 176,
+          "losses": 428,
+          "score": 484.0,
+          "score_rate": 0.484,
+          "text": "C# v4.45 scored 484.0/1000 against Stockfish (1800 Elo): 396 wins, 176 draws, 428 losses, score rate 0.4840."
+        }
+      },
+      "limitations": []
     }
   ]
 }

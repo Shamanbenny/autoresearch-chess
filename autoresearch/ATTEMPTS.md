@@ -1662,3 +1662,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.9634`
 - average_positions_or_nodes: `7548.7870`
 - inferred_conclusion: `Rejected: v4.44 scored 0.4815 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0400. Average nodes increased to 7548.79 from v4.43's 7340.81, so the stricter quiet-king verification did not fail from obvious throughput loss, but it still degraded move quality or root stability. The approved blunder was the quiet king move ...Kg8 at ply 52, scored +1188, allowing Qh6 and a forced mate sequence; v4.44's worst overturn shifted to the pawn capture hxg4 at ply 47, scored +1055, allowing ...Qxc4 and then a forced mate ending ...Qxa2#. This means the targeted king-move verification may have moved the specific failure but did not solve the broader exposed-king queen-invasion horizon problem, and adding stricter verification for only king moves is too narrow to justify its search-shape disturbance. Future attempts should not further tighten root verification by move type unless backed by a cheaper concrete threat detector; focus instead on recognizing queen invasion/mate threats around trapped kings or improving root stability without adding more selective verification overhead.`
+
+## Attempt: 2026-06-21T09:00:24Z - v4.45
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.43`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_43Engine.cs`
+- candidate_version: `v4.45`
+- version_bump: `minor`
+- hypotheses:
+  - `High-score quiet root moves that claim a large advantage should prove more than the fixed 250cp retained edge used by v4.43, because the latest blunder's ...Kg8 still passed that weak floor while allowing Qh6 and a forced mate.`
+  - `Making the quiet-root verification floor proportional to the searched score, capped at a moderate 520cp, may catch optimistic exposed-king horizon moves without v4.44's extra verification ply or king-move special case.`
+  - `Keeping the existing two-candidate cap, quiet-only gate, and one-ply-deeper zero-window probe should preserve v4.43's successful search shape better than broad capture verification, check scans, or static king-danger terms.`
+- implementation_summary: `Changed the existing high-score quiet root verification to use an adaptive retained-advantage floor: max 520cp, min 250cp, equal to half the candidate move score within that range. The verification remains quiet-only, capped at two root candidates per iteration, and uses the existing search depth with no extra move generation, evaluation terms, pruning changes, TT changes, or public API changes.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `396/176/428`
+- score: `484.0`
+- score_rate: `0.4840`
+- average_plies: `98.3540`
+- average_processing_time_ms: `101.2325`
+- average_positions_or_nodes: `7429.5053`
+- inferred_conclusion: `Rejected: v4.45 scored 0.4840 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0330. Average nodes rose to 7429.51 from v4.43's 7340.81, so the adaptive quiet-root verification floor was not an obvious throughput failure, but it degraded aggregate move quality. Comparing blunders, the approved seed's worst overturn was the quiet king move ...Kg8 at ply 52, scored +1188, allowing Qh6 and a queen/bishop forced mate. The current candidate's worst overturn shifted to the quiet rook move Rfd1 at ply 53, scored +2083 after a promoted-queen/material-winning sequence, allowing ...Qxf2+ and a queen/rook mating net ending ...Rg4#. This means the stricter retained-advantage floor did not reliably catch high-score quiet horizon failures; the verification still accepted or steered into positions where opponent forcing checks near the king dominate. Future attempts should avoid further tightening this root verification floor or adding move-type-specific verification. The remaining issue points to exposed-king forcing-check and queen-invasion visibility, but prior broad threat scans, check extensions, quiet-check ordering/quiescence, king-danger eval, and capture verification were too costly or distorting, so promising work should focus on cheaper root stability/search allocation or a very narrow concrete mate-threat detector that replaces work rather than adding broad probes.`
