@@ -1327,3 +1327,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.7497`
 - average_positions_or_nodes: `7600.0031`
 - inferred_conclusion: `Rejected: removing the quiet-check veto from shallow quiet futility pruning increased average nodes to 7600.00 versus the v4.8 reference but reduced score_rate to 0.4630, with improvement_lcb95=-0.0491. The change was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0330, so the regression is a move-quality issue rather than reliability. Future V4 attempts should preserve the existing MoveGivesCheck safety check in quiet futility pruning despite its make/unmake overhead; pruning quiet checking moves at shallow depth loses too much tactical coverage.`
+
+## Attempt: 2026-06-21T02:01:05Z - v4.30
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.30`
+- version_bump: `minor`
+- hypotheses:
+  - `Quiescence delta pruning should preserve capture moves that give check, because these are concrete tactical forcing moves and can matter even when their immediate material swing is below alpha.`
+- implementation_summary: `Changed quiescence delta-pruning so a capture that would otherwise be delta-pruned is still searched if making the move gives check, paying the make/unmake check test only for already-pruneable captures.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `378/150/472`
+- score: `453.0`
+- score_rate: `0.4530`
+- average_plies: `95.9230`
+- average_processing_time_ms: `101.0389`
+- average_positions_or_nodes: `7329.5315`
+- inferred_conclusion: `Rejected: preserving delta-pruned quiescence captures that give check reduced score_rate to 0.4530 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0595. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0300, but average nodes fell to 7329.53 from v4.8's 7542.32 and move quality regressed. Future V4 work should avoid adding make/unmake-based checking-capture exemptions to quiescence delta pruning; preserve v4.8's strict quiescence budget and look for lower-overhead tactical or ordering changes.`

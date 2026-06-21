@@ -1681,6 +1681,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.30",
+      "api_version": "v4_30",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_30Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Quiescence delta pruning should preserve capture moves that give check, because these are concrete tactical forcing moves and can matter even when their immediate material swing is below alpha."
+      ],
+      "summary": "Changed quiescence delta-pruning so a capture that would otherwise be delta-pruned is still searched if making the move gives check, paying the make/unmake check test only for already-pruneable captures.",
+      "implementation_summary": "Changed quiescence delta-pruning so a capture that would otherwise be delta-pruned is still searched if making the move gives check, paying the make/unmake check test only for already-pruneable captures.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 378,
+          "draws": 150,
+          "losses": 472,
+          "score": 453.0,
+          "score_rate": 0.453,
+          "text": "C# v4.30 scored 453.0/1000 against Stockfish (1800 Elo): 378 wins, 150 draws, 472 losses, score rate 0.4530."
+        }
+      },
+      "limitations": []
     }
   ]
 }
