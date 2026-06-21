@@ -2147,6 +2147,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.47",
+      "api_version": "v4_47",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_47Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "The approved v4.39 adaptive aspiration idea can be pushed slightly further on top of v4.43 by widening high-score root windows, reducing volatile fail-low/fail-high re-search churn in positions where the engine already believes it has a large advantage.",
+        "A modest divisor/cap retune should buy root search stability in exposed-king tactical positions without adding the broad check generation, stricter root verification, or static king-safety evaluation that recent rejected attempts showed were distorting.",
+        "Keeping the change limited to aspiration sizing preserves v4.43's bishop-pair bonus, quiet-futility eval cache, quiet-only high-score verification, pruning, move ordering, TT size, and public API shape."
+      ],
+      "summary": "Retuned the adaptive root aspiration window for high-score positions by changing the high-score divisor from 8 to 6 and the maximum extra window from 160cp to 220cp. No evaluation terms, pruning rules, move ordering, TT behavior, root verification gates, diagnostics, or public APIs were changed.",
+      "implementation_summary": "Retuned the adaptive root aspiration window for high-score positions by changing the high-score divisor from 8 to 6 and the maximum extra window from 160cp to 220cp. No evaluation terms, pruning rules, move ordering, TT behavior, root verification gates, diagnostics, or public APIs were changed.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 407,
+          "draws": 169,
+          "losses": 424,
+          "score": 491.5,
+          "score_rate": 0.4915,
+          "text": "C# v4.47 scored 491.5/1000 against Stockfish (1800 Elo): 407 wins, 169 draws, 424 losses, score rate 0.4915."
+        }
+      },
+      "limitations": []
     }
   ]
 }

@@ -1708,3 +1708,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.1541`
 - average_positions_or_nodes: `7367.1767`
 - inferred_conclusion: `Rejected: v4.46 scored 0.4730 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0340. Average nodes were 7367.18, close to v4.43's 7340.81, so the regression was not an obvious throughput failure; the static back-rank exposure penalty degraded aggregate move choice. Comparing blunders, the approved seed's worst overturn was the home-rank quiet king move ...Kg8 at ply 52, scored +1188, allowing Qh6 and a queen/bishop forced mate. The current candidate's worst overturn shifted to ...Qxg5 at ply 52, scored +1428, after the king had already moved to h7; White recaptured fxg5 and the line collapsed through ...Bg3, Rh4+, and Rh8#. This means the added penalty was too narrow to catch the broader exposed-king forcing-line issue and likely distorted evaluation in ordinary queen+bishop positions. Future attempts should avoid more static king-exposure penalties of this kind, as well as previously rejected broad check scans or stricter root verification, and instead look for cheaper root stability/search-allocation ideas or a concrete tactical detector that covers forcing checking sequences after king displacement, not just home-rank shelter.`
+
+## Attempt: 2026-06-21T09:42:21Z - v4.47
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.43`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_43Engine.cs`
+- candidate_version: `v4.47`
+- version_bump: `minor`
+- hypotheses:
+  - `The approved v4.39 adaptive aspiration idea can be pushed slightly further on top of v4.43 by widening high-score root windows, reducing volatile fail-low/fail-high re-search churn in positions where the engine already believes it has a large advantage.`
+  - `A modest divisor/cap retune should buy root search stability in exposed-king tactical positions without adding the broad check generation, stricter root verification, or static king-safety evaluation that recent rejected attempts showed were distorting.`
+  - `Keeping the change limited to aspiration sizing preserves v4.43's bishop-pair bonus, quiet-futility eval cache, quiet-only high-score verification, pruning, move ordering, TT size, and public API shape.`
+- implementation_summary: `Retuned the adaptive root aspiration window for high-score positions by changing the high-score divisor from 8 to 6 and the maximum extra window from 160cp to 220cp. No evaluation terms, pruning rules, move ordering, TT behavior, root verification gates, diagnostics, or public APIs were changed.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `407/169/424`
+- score: `491.5`
+- score_rate: `0.4915`
+- average_plies: `97.4270`
+- average_processing_time_ms: `101.2427`
+- average_positions_or_nodes: `7446.3122`
+- inferred_conclusion: `Rejected: v4.47 scored 0.4915 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0350. Average nodes rose to 7446.31 from v4.43's 7340.81, so the wider high-score aspiration window did buy some throughput or reduce re-search churn, but it degraded aggregate move choice. Comparing blunders, the approved seed's worst overturn was the quiet king move ...Kg8 at ply 52, scored +1188, allowing Qh6 and a queen/bishop mating sequence. The current candidate's worst overturn shifted to the checking queen move ...Qd6+ at ply 58, scored +1898, after which Kg1 exposed a forced line with ...Qg3+ and eventual Qg7#. This indicates the aspiration retune did not solve the exposed-king forcing-check horizon flaw; widening volatile root windows further than v4.39/v4.43 likely changes root stability in harmful ways despite slightly higher node counts. Future attempts should preserve v4.43's aspiration settings and avoid more aspiration widening, stricter root verification, broad check scans, or static king-exposure penalties unless a very narrow concrete mate-threat detector can replace existing work rather than add search distortion.`
