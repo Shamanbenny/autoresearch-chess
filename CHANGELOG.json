@@ -2035,6 +2035,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.43",
+      "api_version": "v4_43",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_43Engine.cs",
+      "served": false,
+      "status": "approved",
+      "commit": "954dccd",
+      "hypotheses": [
+        "Restoring the V4.14/V4.18 24 centipawn bishop-pair bonus may recover a previously positive minor-piece evaluation signal on top of the stronger V4.41 search without adding move generation, quiescence, or root verification overhead.",
+        "Passing the nullable static evaluation by reference into shallow quiet futility pruning should implement the intended V4.16 cache, avoiding repeated evaluation calls within the same node while preserving pruning thresholds and move semantics.",
+        "Using only the V4.18 bishop-pair plus quiet-futility cache pair, without V4.42's broader high-score capture verification, may keep the positive old signal while avoiding the root-verification overhead that regressed the latest candidate."
+      ],
+      "summary": "Added a 24 centipawn bishop-pair positional bonus for each side, and changed quiet futility pruning to populate and reuse the per-node nullable static evaluation by reference. The V4.41 high-score root verification remains limited to quiet moves.",
+      "implementation_summary": "Added a 24 centipawn bishop-pair positional bonus for each side, and changed quiet futility pruning to populate and reuse the per-node nullable static evaluation by reference. The V4.41 high-score root verification remains limited to quiet moves.",
+      "evaluation_log_path": "autoresearch/approved_logs/V4_43Engine-954dccd-result.csv",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 415,
+          "draws": 174,
+          "losses": 411,
+          "score": 502.0,
+          "score_rate": 0.502,
+          "text": "C# v4.43 scored 502.0/1000 against Stockfish (1800 Elo): 415 wins, 174 draws, 411 losses, score rate 0.5020."
+        }
+      },
+      "limitations": []
     }
   ]
 }
