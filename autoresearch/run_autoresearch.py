@@ -722,6 +722,7 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
     approved_score = latest_approved_reference_score(state)
     approved_score_display = f"{approved_score:.4f}" if approved_score is not None else "unrecorded"
     max_hypotheses = state.get("agent", {}).get("max_hypotheses_per_experiment", 2)
+    stripped_user_input = user_input.strip()
     program = textwrap.dedent(
         f"""\
         # Autoresearch Sandbox Program
@@ -740,14 +741,12 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
         """
     )
 
-    if user_input.strip():
-        program += textwrap.dedent(
-            f"""\
-
-            ## User Input (To help guide your hypotheses)
-
-            {user_input.strip()}
-            """
+    if stripped_user_input:
+        quoted_user_input = "\n".join(f"> {line}" if line else ">" for line in stripped_user_input.splitlines())
+        program += (
+            "\n\n"
+            "## User Input (To help guide your hypotheses)\n\n"
+            f"{quoted_user_input}\n"
         )
 
     program += textwrap.dedent(
