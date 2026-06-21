@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Chess;
 using Engine.Core;
 
@@ -334,7 +335,8 @@ internal static class LocalTestingProgram
             options.TimeLimitSeconds,
             options.Workers,
             options.Log,
-            options.ShortSha);
+            options.ShortSha,
+            options.RecordBlunder);
     }
 
     private static int RunEvaluateStock(string[] args)
@@ -363,7 +365,8 @@ internal static class LocalTestingProgram
             options.TimeLimitSeconds,
             options.Workers,
             options.Log,
-            options.ShortSha);
+            options.ShortSha,
+            options.RecordBlunder);
     }
 
     private static int RunBuildOpeningsLookup(string[] args)
@@ -420,6 +423,7 @@ internal static class LocalTestingProgram
         var workers = 1;
         var log = false;
         string? shortSha = null;
+        var recordBlunder = false;
 
         for (var index = 0; index < args.Length; index++)
         {
@@ -449,6 +453,9 @@ internal static class LocalTestingProgram
                 case "--short-sha":
                     shortSha = args[++index];
                     break;
+                case "--record-blunder":
+                    recordBlunder = true;
+                    break;
                 default:
                     throw new ArgumentException($"Unknown argument '{args[index]}'");
             }
@@ -477,7 +484,8 @@ internal static class LocalTestingProgram
             timeLimitSeconds,
             workers,
             log,
-            shortSha);
+            shortSha,
+            recordBlunder);
     }
 
     private static EvaluateStockOptions ParseEvaluateStockOptions(string[] args)
@@ -491,6 +499,7 @@ internal static class LocalTestingProgram
         var workers = 1;
         var log = false;
         string? shortSha = null;
+        var recordBlunder = false;
 
         for (var index = 0; index < args.Length; index++)
         {
@@ -523,6 +532,9 @@ internal static class LocalTestingProgram
                 case "--short-sha":
                     shortSha = args[++index];
                     break;
+                case "--record-blunder":
+                    recordBlunder = true;
+                    break;
                 default:
                     throw new ArgumentException($"Unknown argument '{args[index]}'");
             }
@@ -552,7 +564,8 @@ internal static class LocalTestingProgram
             timeLimitSeconds,
             workers,
             log,
-            shortSha);
+            shortSha,
+            recordBlunder);
     }
 
     private static int RunEvaluationSeries(
@@ -563,7 +576,8 @@ internal static class LocalTestingProgram
         double timeLimitSeconds,
         int workers,
         bool log,
-        string? shortSha)
+        string? shortSha,
+        bool recordBlunder)
     {
         string[] openingFens = [StartingFen];
         var totalPairs = games / 2;
@@ -572,6 +586,12 @@ internal static class LocalTestingProgram
         var aggregate = new MatchAggregate(engineAInfo, engineBInfo);
         var csvCoordinator = log
             ? EvaluationCsvLogCoordinator.Create(shortSha!)
+            : null;
+        var blunderRecorder = recordBlunder
+            ? BlunderGameHistoryRecorder.Create(shortSha!)
+            : null;
+        var diagnosticsRecorder = log
+            ? AdditionalDiagnosticsRecorder.Create(shortSha!)
             : null;
         using var workerLoggers = csvCoordinator is not null
             ? new ThreadLocal<EvaluationCsvLogger?>(() => csvCoordinator.CreateWorkerLogger(), trackAllValues: true)
@@ -595,10 +615,19 @@ internal static class LocalTestingProgram
             Console.WriteLine("Opening source file: not used");
             Console.WriteLine($"Unique opening positions loaded: {openingFens.Length}");
             Console.WriteLine($"Logging enabled: {log}");
+            Console.WriteLine($"Blunder history recording enabled: {recordBlunder}");
             if (csvCoordinator is not null)
             {
                 Console.WriteLine($"Logging short SHA: {shortSha}");
                 Console.WriteLine($"CSV log file: {csvCoordinator.FinalFilePath}");
+            }
+            if (blunderRecorder is not null)
+            {
+                Console.WriteLine($"Blunder history file: {blunderRecorder.ArtifactPath}");
+            }
+            if (diagnosticsRecorder is not null)
+            {
+                Console.WriteLine($"Additional diagnostics file: {diagnosticsRecorder.ArtifactPath}");
             }
 
             Console.Out.Flush();
@@ -628,7 +657,8 @@ internal static class LocalTestingProgram
                         pairEngineB,
                         timeLimitSeconds,
                         maxPlies,
-                        engineAWasWhite: true);
+                        engineAWasWhite: true,
+                        recordBlunder);
 
                     pairEngineA.ResetForNewGame();
                     pairEngineB.ResetForNewGame();
@@ -642,7 +672,8 @@ internal static class LocalTestingProgram
                         pairEngineA,
                         timeLimitSeconds,
                         maxPlies,
-                        engineAWasWhite: false);
+                        engineAWasWhite: false,
+                        recordBlunder);
 
                     var pairResult = new PairEvaluationResult(
                         pairNumber,
@@ -668,6 +699,10 @@ internal static class LocalTestingProgram
                     workerLogger?.WriteGame(pairResult.FirstGame);
                     workerLogger?.WriteGame(pairResult.SecondGame);
                     workerLogger?.Flush();
+                    blunderRecorder?.RecordGame(pairResult.FirstGame);
+                    blunderRecorder?.RecordGame(pairResult.SecondGame);
+                    diagnosticsRecorder?.RecordGame(pairResult.FirstGame);
+                    diagnosticsRecorder?.RecordGame(pairResult.SecondGame);
                 });
 
             var aggregateMetrics = BuildAggregateMetrics(aggregate, totalPairs);
@@ -687,6 +722,8 @@ internal static class LocalTestingProgram
             }
 
             csvCoordinator?.MergeWorkerLogs();
+            blunderRecorder?.WriteArtifact();
+            diagnosticsRecorder?.WriteArtifact();
         }
     }
 
@@ -699,7 +736,8 @@ internal static class LocalTestingProgram
         EvaluationParticipant blackEngine,
         double timeLimitSeconds,
         int maxPlies,
-        bool engineAWasWhite)
+        bool engineAWasWhite,
+        bool recordBlunder)
     {
         var board = new BoardState(openingFen);
         var whiteStats = new EngineGameStats();
@@ -710,6 +748,8 @@ internal static class LocalTestingProgram
         string? failureMessage = null;
         var gameStopwatch = Stopwatch.StartNew();
         var plies = 0;
+        var history = recordBlunder ? new List<MoveHistoryEntry>() : null;
+        var moveDiagnostics = new List<MoveDiagnosticEntry>();
 
         while (!board.IsGameOver && plies < maxPlies)
         {
@@ -746,11 +786,16 @@ internal static class LocalTestingProgram
                     failureMessage,
                     whiteStats,
                     blackStats,
-                    gameStopwatch.Elapsed);
+                    gameStopwatch.Elapsed,
+                    history ?? [],
+                    moveDiagnostics);
             }
 
             searchStopwatch.Stop();
             activeStats.RecordMove(searchStopwatch.Elapsed.TotalSeconds, searchResult);
+            var beforeFen = board.Fen;
+            var moveSan = searchResult.MoveSan;
+            var moveUci = MoveToUci(searchResult.Move);
 
             if (!IsLegalReturnedMove(board, searchResult.Move))
             {
@@ -774,11 +819,43 @@ internal static class LocalTestingProgram
                     failureMessage,
                     whiteStats,
                     blackStats,
-                    gameStopwatch.Elapsed);
+                    gameStopwatch.Elapsed,
+                    history ?? [],
+                    moveDiagnostics);
             }
 
             board.Push(searchResult.Move);
             plies++;
+            history?.Add(new MoveHistoryEntry(
+                plies,
+                sideToMoveIsWhite ? "white" : "black",
+                activeEngine.EngineStem,
+                IsEngineAToMove(engineAWasWhite, sideToMoveIsWhite),
+                moveSan,
+                moveUci,
+                searchResult.Score,
+                PositionCount(searchResult),
+                searchStopwatch.Elapsed.TotalMilliseconds,
+                beforeFen,
+                board.Fen));
+            if (IsEngineAToMove(engineAWasWhite, sideToMoveIsWhite)
+                && searchResult.Diagnostics is not null
+                && searchResult.Diagnostics.Count > 0)
+            {
+                moveDiagnostics.Add(new MoveDiagnosticEntry(
+                    gameNumber,
+                    pairNumber,
+                    openingIndex,
+                    plies,
+                    sideToMoveIsWhite ? "white" : "black",
+                    activeEngine.EngineStem,
+                    moveSan,
+                    moveUci,
+                    searchResult.Score,
+                    beforeFen,
+                    board.Fen,
+                    searchResult.Diagnostics));
+            }
 
             if (board.CanClaimDraw())
             {
@@ -824,7 +901,9 @@ internal static class LocalTestingProgram
             failureMessage,
             whiteStats,
             blackStats,
-            gameStopwatch.Elapsed);
+            gameStopwatch.Elapsed,
+            history ?? [],
+            moveDiagnostics);
     }
 
     private static EvaluationParticipant ResolveParticipantFromEngineFile(string engineFilePath)
@@ -961,6 +1040,11 @@ internal static class LocalTestingProgram
             "0-1" => 0.0,
             _ => 0.5,
         };
+    }
+
+    private static bool IsEngineAToMove(bool engineAWasWhite, bool sideToMoveIsWhite)
+    {
+        return engineAWasWhite == sideToMoveIsWhite;
     }
 
     private static SortedDictionary<string, SortedSet<string>> BuildOpeningMoveLookup(IEnumerable<string> lines)
@@ -1317,8 +1401,8 @@ internal static class LocalTestingProgram
         Console.Error.WriteLine("  dotnet run --project engine_csharp/src/LocalTesting -- puzzle-2 --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --time-limit-seconds 1.0 --max-plies 70");
         Console.Error.WriteLine("  dotnet run --project engine_csharp/src/LocalTesting -- endgame-1 --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --time-limit-seconds 1.0");
         Console.Error.WriteLine("  dotnet run --project engine_csharp/src/LocalTesting -- endgame-2 --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --time-limit-seconds 1.0");
-        Console.Error.WriteLine("  dotnet run --project engine_csharp/src/LocalTesting -- evaluate-match --engine-a-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --engine-b-file engine_csharp/src/Engine.Core/V3/V3_0Engine.cs --workers 6 --log --short-sha 1a2b3c4");
-        Console.Error.WriteLine("  dotnet run --project engine_csharp/src/LocalTesting -- evaluate-stock --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --stockfish-path autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2 --stockfish-elo 1800 --games 20 --time-limit-ms 100 --workers 6 --log --short-sha 1a2b3c4");
+        Console.Error.WriteLine("  dotnet run --project engine_csharp/src/LocalTesting -- evaluate-match --engine-a-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --engine-b-file engine_csharp/src/Engine.Core/V3/V3_0Engine.cs --workers 6 --log --short-sha 1a2b3c4 --record-blunder");
+        Console.Error.WriteLine("  dotnet run --project engine_csharp/src/LocalTesting -- evaluate-stock --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --stockfish-path autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2 --stockfish-elo 1800 --games 20 --time-limit-ms 100 --workers 6 --log --short-sha 1a2b3c4 --record-blunder");
         Console.Error.WriteLine("  dotnet run --project engine_csharp/src/LocalTesting -- build-openings-lookup");
         Console.Error.WriteLine("  dotnet run --project engine_csharp/src/LocalTesting -- backend-worker-experiment --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --games 20 --time-limit-ms 100 --workers 6 --skip-1-worker");
     }
@@ -1348,7 +1432,8 @@ internal static class LocalTestingProgram
         double TimeLimitSeconds,
         int Workers,
         bool Log,
-        string? ShortSha);
+        string? ShortSha,
+        bool RecordBlunder);
 
     private sealed record EvaluateStockOptions(
         string EngineFilePath,
@@ -1359,7 +1444,8 @@ internal static class LocalTestingProgram
         double TimeLimitSeconds,
         int Workers,
         bool Log,
-        string? ShortSha);
+        string? ShortSha,
+        bool RecordBlunder);
 
     private sealed record EvaluationParticipant(
         string SourcePath,
@@ -1430,7 +1516,371 @@ internal static class LocalTestingProgram
         string? FailureMessage,
         EngineGameStats WhiteStats,
         EngineGameStats BlackStats,
-        TimeSpan Elapsed);
+        TimeSpan Elapsed,
+        IReadOnlyList<MoveHistoryEntry> MoveHistory,
+        IReadOnlyList<MoveDiagnosticEntry> MoveDiagnostics);
+
+    private sealed record MoveHistoryEntry(
+        int Ply,
+        string SideToMove,
+        string Engine,
+        bool EngineA,
+        string MoveSan,
+        string MoveUci,
+        int Score,
+        int PositionsOrNodes,
+        double ElapsedMs,
+        string FenBefore,
+        string FenAfter);
+
+    private sealed record MoveDiagnosticEntry(
+        int GameNumber,
+        int PairNumber,
+        int OpeningIndex,
+        int Ply,
+        string SideToMove,
+        string Engine,
+        string MoveSan,
+        string MoveUci,
+        int Score,
+        string FenBefore,
+        string FenAfter,
+        IReadOnlyDictionary<string, object?> Diagnostics);
+
+    private sealed record BlunderCandidate(
+        double Overturn,
+        int CandidateMovePly,
+        int OpponentReplyPly,
+        int ScoreBeforeCandidateMove,
+        int ScoreAfterOpponentReply,
+        EvaluationGameResult Game);
+
+    private sealed class BlunderGameHistoryRecorder
+    {
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+
+        private readonly object _lock = new();
+        private BlunderCandidate? _worst;
+
+        private BlunderGameHistoryRecorder(string logsDirectory, string attemptId)
+        {
+            ArtifactPath = Path.Combine(logsDirectory, $"{attemptId}-blunder_game-board-history.json");
+        }
+
+        public string ArtifactPath { get; }
+
+        public static BlunderGameHistoryRecorder Create(string attemptId)
+        {
+            var logsDirectory = Path.Combine(FindRepoRoot(), "autoresearch", "logs");
+            Directory.CreateDirectory(logsDirectory);
+
+            foreach (var stalePath in Directory.EnumerateFiles(logsDirectory, $"{attemptId}-blunder_game-board-history*.json"))
+            {
+                File.Delete(stalePath);
+            }
+
+            return new BlunderGameHistoryRecorder(logsDirectory, attemptId);
+        }
+
+        public void RecordGame(EvaluationGameResult result)
+        {
+            if (ScoreForEngine(result) >= 1.0)
+            {
+                return;
+            }
+
+            var candidate = FindWorstBlunder(result);
+            if (candidate is null)
+            {
+                return;
+            }
+
+            lock (_lock)
+            {
+                if (_worst is null || candidate.Overturn > _worst.Overturn)
+                {
+                    _worst = candidate;
+                }
+            }
+        }
+
+        public void WriteArtifact()
+        {
+            if (_worst is null)
+            {
+                if (File.Exists(ArtifactPath))
+                {
+                    File.Delete(ArtifactPath);
+                }
+
+                return;
+            }
+
+            var game = _worst.Game;
+            var payload = new
+            {
+                schema_version = 1,
+                purpose = "Worst candidate blunder board history from this evaluator run. A blunder is a candidate positive score before its move followed by a negative candidate score on the candidate's next search after the opponent reply.",
+                selection = new
+                {
+                    max_overturn = _worst.Overturn,
+                    candidate_move_ply = _worst.CandidateMovePly,
+                    opponent_reply_ply = _worst.OpponentReplyPly,
+                    score_before_candidate_move = _worst.ScoreBeforeCandidateMove,
+                    score_after_opponent_reply = _worst.ScoreAfterOpponentReply,
+                },
+                game = new
+                {
+                    game.GameNumber,
+                    game.PairNumber,
+                    game.OpeningIndex,
+                    game.OpeningFen,
+                    game.WhiteEngineStem,
+                    game.BlackEngineStem,
+                    game.EngineAWasWhite,
+                    game.Result,
+                    game.TerminationReason,
+                    game.Plies,
+                    engine_a_score = ScoreForEngine(game),
+                    candidate_result = ScoreForEngine(game) switch
+                    {
+                        1.0 => "win",
+                        0.5 => "draw",
+                        _ => "loss",
+                    },
+                    note = "Candidate wins are intentionally ignored. Stalemate/draw games may be selected when they contain the largest overturn.",
+                },
+                board_history = game.MoveHistory,
+            };
+
+            File.WriteAllText(ArtifactPath, JsonSerializer.Serialize(payload, JsonOptions) + Environment.NewLine);
+        }
+
+        private static BlunderCandidate? FindWorstBlunder(EvaluationGameResult result)
+        {
+            BlunderCandidate? worst = null;
+            var history = result.MoveHistory;
+
+            for (var index = 0; index < history.Count - 1; index++)
+            {
+                var candidateMove = history[index];
+                var opponentReply = history[index + 1];
+                if (!candidateMove.EngineA || opponentReply.EngineA)
+                {
+                    continue;
+                }
+
+                if (candidateMove.Score <= 0)
+                {
+                    continue;
+                }
+
+                var scoreAfterOpponentReply = FindNextCandidateScore(history, index + 2);
+                if (scoreAfterOpponentReply is null
+                    && result.TerminationReason == "checkmate"
+                    && ScoreForEngine(result) == 0.0)
+                {
+                    scoreAfterOpponentReply = -999999;
+                }
+
+                if (scoreAfterOpponentReply is null || scoreAfterOpponentReply >= 0)
+                {
+                    continue;
+                }
+
+                var overturn = candidateMove.Score + Math.Abs(scoreAfterOpponentReply.Value);
+                if (worst is null || overturn > worst.Overturn)
+                {
+                    worst = new BlunderCandidate(
+                        overturn,
+                        candidateMove.Ply,
+                        opponentReply.Ply,
+                        candidateMove.Score,
+                        scoreAfterOpponentReply.Value,
+                        result);
+                }
+            }
+
+            return worst;
+        }
+
+        private static int? FindNextCandidateScore(IReadOnlyList<MoveHistoryEntry> history, int startIndex)
+        {
+            for (var index = startIndex; index < history.Count; index++)
+            {
+                if (history[index].EngineA)
+                {
+                    return history[index].Score;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    private sealed class AdditionalDiagnosticsRecorder
+    {
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+
+        private readonly object _lock = new();
+        private readonly Dictionary<string, DiagnosticMetricAggregate> _metrics = new(StringComparer.Ordinal);
+
+        private AdditionalDiagnosticsRecorder(string logsDirectory, string attemptId)
+        {
+            ArtifactPath = Path.Combine(logsDirectory, $"{attemptId}-additional-diagnostics.json");
+        }
+
+        public string ArtifactPath { get; }
+
+        public static AdditionalDiagnosticsRecorder Create(string attemptId)
+        {
+            var logsDirectory = Path.Combine(FindRepoRoot(), "autoresearch", "logs");
+            Directory.CreateDirectory(logsDirectory);
+
+            foreach (var stalePath in Directory.EnumerateFiles(logsDirectory, $"{attemptId}-additional-diagnostics*.json"))
+            {
+                File.Delete(stalePath);
+            }
+
+            return new AdditionalDiagnosticsRecorder(logsDirectory, attemptId);
+        }
+
+        public void RecordGame(EvaluationGameResult result)
+        {
+            foreach (var entry in result.MoveDiagnostics)
+            {
+                lock (_lock)
+                {
+                    foreach (var (key, value) in entry.Diagnostics)
+                    {
+                        if (string.IsNullOrWhiteSpace(key))
+                        {
+                            continue;
+                        }
+
+                        if (!_metrics.TryGetValue(key, out var aggregate))
+                        {
+                            aggregate = new DiagnosticMetricAggregate(key);
+                            _metrics[key] = aggregate;
+                        }
+
+                        aggregate.Record(value, entry);
+                    }
+                }
+            }
+        }
+
+        public void WriteArtifact()
+        {
+            if (_metrics.Count == 0)
+            {
+                if (File.Exists(ArtifactPath))
+                {
+                    File.Delete(ArtifactPath);
+                }
+
+                return;
+            }
+
+            var payload = new
+            {
+                schema_version = 1,
+                purpose = "Optional engine-emitted diagnostics aggregated from SearchResult.Diagnostics for candidate/engine-A moves only. Older engines may emit no diagnostics.",
+                metrics = _metrics.Values
+                    .OrderBy(metric => metric.Key, StringComparer.Ordinal)
+                    .Select(metric => metric.ToJson())
+                    .ToArray(),
+            };
+
+            File.WriteAllText(ArtifactPath, JsonSerializer.Serialize(payload, JsonOptions) + Environment.NewLine);
+        }
+    }
+
+    private sealed class DiagnosticMetricAggregate(string key)
+    {
+        private const int MaxSamples = 8;
+        private readonly List<object> _samples = [];
+        private double _sum;
+
+        public string Key { get; } = key;
+
+        public int Count { get; private set; }
+
+        public int NumericCount { get; private set; }
+
+        public double? Min { get; private set; }
+
+        public double? Max { get; private set; }
+
+        public void Record(object? value, MoveDiagnosticEntry source)
+        {
+            Count++;
+            if (TryConvertToDouble(value, out var numeric))
+            {
+                NumericCount++;
+                _sum += numeric;
+                Min = Min is null ? numeric : Math.Min(Min.Value, numeric);
+                Max = Max is null ? numeric : Math.Max(Max.Value, numeric);
+            }
+
+            if (_samples.Count < MaxSamples)
+            {
+                _samples.Add(new
+                {
+                    value,
+                    source.GameNumber,
+                    source.Ply,
+                    source.MoveSan,
+                    source.MoveUci,
+                    source.Score,
+                    source.FenBefore,
+                });
+            }
+        }
+
+        public object ToJson()
+        {
+            return new
+            {
+                key = Key,
+                count = Count,
+                numeric_count = NumericCount,
+                average = NumericCount == 0 ? (double?)null : _sum / NumericCount,
+                min = Min,
+                max = Max,
+                samples = _samples,
+            };
+        }
+
+        private static bool TryConvertToDouble(object? value, out double result)
+        {
+            switch (value)
+            {
+                case null:
+                    result = 0;
+                    return false;
+                case byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal:
+                    result = Convert.ToDouble(value, CultureInfo.InvariantCulture);
+                    return double.IsFinite(result);
+                case string text when double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed):
+                    result = parsed;
+                    return double.IsFinite(result);
+                default:
+                    result = 0;
+                    return false;
+            }
+        }
+    }
 
     private sealed class EvaluationCsvLogCoordinator
     {

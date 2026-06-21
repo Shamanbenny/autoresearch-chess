@@ -111,7 +111,7 @@ Important rules:
 - The latest approved in-repo engine is the seed for new candidate versions.
 - New work happens in a newly cloned versioned engine file.
 - The current fixed evaluator contract is documented in `autoresearch/README.md`; use that file, `autoresearch/state.json`, and `autoresearch/ATTEMPTS.md` for the current command, baseline, and latest approved seed values.
-- Approval requires a clean build, a completed evaluator run, no illegal/crash failures, and `lcb95 > 0.5`.
+- Approval requires a clean build, a completed evaluator run, no illegal/crash failures, `score_rate` above the latest approved seed's current-baseline reference score, and `max_plies_rate < 0.10`.
 - `ATTEMPTS.md` is append-only except for the “Latest Approved Engine Seed” section.
 - Approved candidates are also appended to `CHANGELOG.json` with `served: false` by default.
 

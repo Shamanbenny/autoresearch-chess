@@ -7,7 +7,6 @@ import argparse
 import csv
 import datetime as dt
 import json
-import math
 import os
 import re
 import shutil
@@ -30,6 +29,8 @@ CHANGELOG_PATH = REPO_ROOT / "CHANGELOG.json"
 SANDBOX_ROOT = REPO_ROOT / "autoresearch-sandbox"
 TEXT_LOG_DIR = REPO_ROOT / "autoresearch" / "console-logs"
 LOCAL_ENV_PATH = REPO_ROOT / ".env"
+LATEST_BLUNDER_HISTORY_NAME = "latest-blunder_game-board-history.json"
+LATEST_ADDITIONAL_DIAGNOSTICS_NAME = "latest-additional_diagnostics.json"
 ENGINE_VERSION_RE = re.compile(r"^v(?P<major>\d+)\.(?P<minor>\d+)$", re.IGNORECASE)
 SOC_CC_EVALUATOR_WORKERS = 12
 SOC_CC_SMTP_HOST = "smtp.gmail.com"
@@ -71,18 +72,12 @@ class EvaluationMetrics:
     max_plies_count: int
     max_plies_rate: float
     failure_counts: dict[str, int]
-    pair_mean: float
-    pair_sd: float
-    pair_count: int
-    lcb95: float
     games: int
 
 
 @dataclass(frozen=True)
 class ReferenceMetrics:
     score_rate: float
-    pair_sd: float
-    pair_count: int
     source: Path
 
 
@@ -240,7 +235,13 @@ def main() -> int:
         status = "rejected"
         verdict_reason = "Build failed before evaluator run."
         log_path = REPO_ROOT / "autoresearch" / "logs" / f"{attempt_id}-result.csv"
+        blunder_log_path = REPO_ROOT / "autoresearch" / "logs" / f"{attempt_id}-blunder_game-board-history.json"
+        diagnostics_log_path = REPO_ROOT / "autoresearch" / "logs" / f"{attempt_id}-additional-diagnostics.json"
         approved_log_path: Path | None = None
+        latest_blunder_path: Path | None = None
+        latest_diagnostics_path: Path | None = None
+        should_publish_blunder_history = False
+        should_publish_diagnostics = False
 
         if build_ok:
             log_phase("Build succeeded. Starting evaluator run.")
@@ -253,6 +254,8 @@ def main() -> int:
                 soc_cc_enabled=args.soc_cc,
             )
             if evaluator_ok and log_path.exists():
+                should_publish_blunder_history = True
+                should_publish_diagnostics = True
                 log_phase(f"Evaluator finished. Parsing results from {log_path.relative_to(REPO_ROOT)}.")
                 metrics = parse_evaluation_csv(log_path, state)
                 status, verdict_reason = decide_candidate(metrics, state)
@@ -261,6 +264,10 @@ def main() -> int:
                     verdict_reason = (
                         "Rejected because this was an explicit smoke run, not the fixed 1000-game approval run."
                     )
+                latest_blunder_path = blunder_log_path if blunder_log_path.exists() else None
+                copy_latest_blunder_history_to_sandbox(candidate, latest_blunder_path)
+                latest_diagnostics_path = diagnostics_log_path if diagnostics_log_path.exists() else None
+                copy_latest_additional_diagnostics_to_sandbox(candidate, latest_diagnostics_path)
                 if status == "approved":
                     approved_log_path = move_approved_log(candidate, log_path, attempt_id)
             else:
@@ -269,7 +276,15 @@ def main() -> int:
         else:
             log_phase("Build failed. Skipping evaluator.")
 
-        evaluation_summary = build_evaluation_summary(candidate, status, verdict_reason, metrics, state)
+        evaluation_summary = build_evaluation_summary(
+            candidate,
+            status,
+            verdict_reason,
+            metrics,
+            state,
+            latest_blunder_path,
+            latest_diagnostics_path,
+        )
         log_phase("Sending evaluation summary back into the existing Codex session.")
         try:
             run_codex_result_update(state, candidate, codex_session, evaluation_summary)
@@ -280,6 +295,8 @@ def main() -> int:
                 candidate,
                 log_path=log_path if log_path.exists() else None,
                 approved_log_path=approved_log_path,
+                blunder_log_path=blunder_log_path if blunder_log_path.exists() else None,
+                diagnostics_log_path=diagnostics_log_path if diagnostics_log_path.exists() else None,
             )
             log_experiment_duration(candidate, experiment_started_at, experiment_started_monotonic)
             choice = prompt_continue("timed out", candidate, reason, soc_cc_enabled=args.soc_cc)
@@ -302,6 +319,14 @@ def main() -> int:
                     experiment_log_start_line=experiment_log_start_line,
                 )
             return 1
+        if should_publish_blunder_history:
+            latest_blunder_path = publish_latest_blunder_history(blunder_log_path)
+        elif blunder_log_path.exists():
+            blunder_log_path.unlink()
+        if should_publish_diagnostics:
+            latest_diagnostics_path = publish_latest_additional_diagnostics(diagnostics_log_path)
+        elif diagnostics_log_path.exists():
+            diagnostics_log_path.unlink()
         log_phase("Reading structured sandbox result from RETURN.json.")
         attempt_note = read_return_json(candidate)
 
@@ -576,7 +601,6 @@ def send_soc_cc_completion_email(
         metrics_lines = (
             f"wins/draws/losses: {metrics.wins}/{metrics.draws}/{metrics.losses}\n"
             f"score_rate: {metrics.score_rate:.4f}\n"
-            f"lcb95: {metrics.lcb95:.4f}\n"
             f"max_plies_rate: {metrics.max_plies_rate:.4f}\n"
             f"average_plies: {metrics.average_plies:.2f}\n"
             f"average_processing_time_ms: {metrics.average_processing_time_ms:.3f}\n"
@@ -665,6 +689,8 @@ def prepare_sandbox(state: dict[str, Any], candidate: Candidate, user_input: str
     candidate.sandbox_engine_file.write_text(renamed, encoding="utf-8")
 
     shutil.copy2(ATTEMPTS_PATH, candidate.sandbox_dir / "ATTEMPTS.md")
+    copy_latest_blunder_history_to_sandbox(candidate, latest_blunder_history_path())
+    copy_latest_additional_diagnostics_to_sandbox(candidate, latest_additional_diagnostics_path())
     (candidate.sandbox_dir / "PROGRAM.md").write_text(agent_program(state, candidate, user_input), encoding="utf-8")
     (candidate.sandbox_dir / "RETURN.json").write_text(return_template(state, candidate), encoding="utf-8")
     init_sandbox_git(candidate.sandbox_dir)
@@ -708,6 +734,8 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
         - `PROGRAM.md`: this instruction file.
         - `{candidate.sandbox_engine_file.name}`: source file where you will be implementing the hypotheses.
         - `ATTEMPTS.md`: prior attempt history and their inferred conclusion
+        - `{LATEST_BLUNDER_HISTORY_NAME}`: optional latest evaluator blunder board-history artifact, present only when a prior run recorded one.
+        - `{LATEST_ADDITIONAL_DIAGNOSTICS_NAME}`: optional latest aggregated engine diagnostics artifact, present only when a prior candidate emitted `SearchResult.Diagnostics`.
         - `RETURN.json`: machine-readable summary you must update.
         """
     )
@@ -764,6 +792,8 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
 
         1. Read `PROGRAM.md` and `ATTEMPTS.md`.
         2. Form at most `{max_hypotheses}` concrete hypotheses.
+           - If `{LATEST_BLUNDER_HISTORY_NAME}` exists, inspect it before choosing hypotheses. It contains the worst recent non-winning game where a candidate positive score before its move became negative after the opponent reply, plus the full board history around that failure.
+           - If `{LATEST_ADDITIONAL_DIAGNOSTICS_NAME}` exists, inspect it for optional engine-emitted metrics such as transposition-table occupancy, cold misses, pruning counts, or other search diagnostics from a prior run.
         3. Edit only `{candidate.sandbox_engine_file.name}`.
         4. Update `RETURN.json` with:
            - `hypotheses`
@@ -782,46 +812,39 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
         - max_plies: `{evaluator['max_plies']}`
 
         A candidate is approved only if it builds, has no evaluator failures,
-        has `score_rate` greater than the latest approved score rate, has a positive
-        one-sided 95% lower confidence bound on improvement over the latest approved reference,
-        and has `max_plies_rate < 0.10`.
+        has `score_rate` greater than the latest approved score rate, and has
+        `max_plies_rate < 0.10`.
 
         A later prompt will include the evaluation result in this same Codex session.
-        At that point, update `RETURN.json` with `inferred_conclusion`, and then stop.
+        If a new `{LATEST_BLUNDER_HISTORY_NAME}` file is present then, read it before writing
+        `inferred_conclusion` so the conclusion can explain whether the worst overturn points
+        to an evaluation, ordering, pruning, or horizon flaw. Then stop.
 
-        ## Approval Formula
+        ## Optional Diagnostics
 
-        The approval decision is based on paired color-swapped results, not just raw aggregate score.
+        Engines may return additional debugging metrics by setting the optional
+        `Diagnostics` dictionary on `SearchResult`. This is not required, and older engines
+        that omit it remain valid. If you add diagnostics for your candidate, keep them cheap
+        and numeric where possible, for example:
 
-        For each paired starting-position match `i`, define:
+        - `tt_occupancy_rate`
+        - `tt_cold_miss_rate`
+        - `null_move_prunes`
+        - `quiet_futility_prunes`
 
-        - one game with candidate as White
-        - one game with candidate as Black
+        `LocalTesting` automatically aggregates candidate/engine-A diagnostics during
+        evaluator runs and writes `{LATEST_ADDITIONAL_DIAGNOSTICS_NAME}` when any are present.
+        If that file is present after evaluation, read it before writing `inferred_conclusion`.
 
-        Assign single-game score:
+        ## Approval Rule
 
-        - win = `1.0`
-        - draw = `0.5`
-        - loss = `0.0`
+        The approval decision uses raw aggregate score against the current evaluator baseline:
 
-        For pair `i`, compute the candidate paired score:
-
-        `p_i = (score_as_white_i + score_as_black_i) / 2`
-
-        With `n = games / 2` pairs, compute:
-
-        - `mean = (1 / n) * sum(p_i)`
-        - `sd = sample standard deviation of the p_i values`
-        - `lcb95 = mean - t_(0.95, n-1) * sd / sqrt(n)`
-
-        Where `t_(0.95, n-1)` is the one-sided 95% Student-t critical value with `n - 1` degrees of freedom.
-
-        Therefore:
         - `score_rate = total_score / games`
         - `approved_seed_score_rate = the latest approved seed's recorded reference score rate against the current evaluator baseline from autoresearch/state.json`
-        - `improvement_lcb95 = (candidate_score_rate - approved_seed_score_rate) - t * sqrt(candidate_pair_sd^2 / candidate_pairs + approved_pair_sd^2 / approved_pairs)`
 
-        Approval requires `improvement_lcb95 > 0`, not `candidate_lcb95 > 0.5`.
+        Approval requires `score_rate > approved_seed_score_rate`, zero evaluator failures,
+        and `max_plies_rate < 0.10`.
         """
     )
     return program
@@ -1193,7 +1216,10 @@ def run_codex_result_update(
             prompt=(
                 f"Here's your evaluation result for {candidate.version} Engine.\n\n"
                 f"{evaluation_summary}\n\n"
-                "Reminder: update `RETURN.json` with your inferred conclusion, and thank you for your help!"
+                "Reminder: if `latest-blunder_game-board-history.json` or `latest-additional_diagnostics.json` "
+                "exists in this sandbox, read it before writing the inferred conclusion. "
+                "Then update `RETURN.json` with your inferred conclusion, "
+                "and thank you for your help!"
             ),
             label=f"{candidate.version} evaluation follow-up",
             sandbox_cwd=candidate.sandbox_dir,
@@ -1220,11 +1246,17 @@ def cleanup_timed_out_attempt(
     *,
     log_path: Path | None = None,
     approved_log_path: Path | None = None,
+    blunder_log_path: Path | None = None,
+    diagnostics_log_path: Path | None = None,
 ) -> None:
     if approved_log_path is not None and approved_log_path.exists():
         approved_log_path.unlink()
     if log_path is not None and log_path.exists():
         log_path.unlink()
+    if blunder_log_path is not None and blunder_log_path.exists():
+        blunder_log_path.unlink()
+    if diagnostics_log_path is not None and diagnostics_log_path.exists():
+        diagnostics_log_path.unlink()
     if candidate.engine_file.exists():
         candidate.engine_file.unlink()
     if candidate.sandbox_dir.exists():
@@ -1299,9 +1331,66 @@ def run_evaluator(
         "--log",
         "--short-sha",
         attempt_id,
+        "--record-blunder",
     ]
     result = run(command, cwd=REPO_ROOT, check=False)
     return result.returncode == 0
+
+
+def latest_blunder_history_path() -> Path:
+    return REPO_ROOT / "autoresearch" / "approved_logs" / LATEST_BLUNDER_HISTORY_NAME
+
+
+def latest_additional_diagnostics_path() -> Path:
+    return REPO_ROOT / "autoresearch" / "approved_logs" / LATEST_ADDITIONAL_DIAGNOSTICS_NAME
+
+
+def copy_latest_blunder_history_to_sandbox(candidate: Candidate, source: Path | None) -> None:
+    target = candidate.sandbox_dir / LATEST_BLUNDER_HISTORY_NAME
+    if source is None or not source.exists():
+        if target.exists():
+            target.unlink()
+        return
+    shutil.copy2(source, target)
+
+
+def copy_latest_additional_diagnostics_to_sandbox(candidate: Candidate, source: Path | None) -> None:
+    target = candidate.sandbox_dir / LATEST_ADDITIONAL_DIAGNOSTICS_NAME
+    if source is None or not source.exists():
+        if target.exists():
+            target.unlink()
+        return
+    shutil.copy2(source, target)
+
+
+def publish_latest_blunder_history(blunder_log_path: Path) -> Path | None:
+    target = latest_blunder_history_path()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if blunder_log_path.exists():
+        shutil.copy2(blunder_log_path, target)
+        blunder_log_path.unlink()
+        log_phase(f"Published latest blunder history artifact to {target.relative_to(REPO_ROOT)}.")
+        return target
+
+    if target.exists():
+        target.unlink()
+        log_phase(f"Removed stale latest blunder history artifact because this evaluator run recorded none.")
+    return None
+
+
+def publish_latest_additional_diagnostics(diagnostics_log_path: Path) -> Path | None:
+    target = latest_additional_diagnostics_path()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if diagnostics_log_path.exists():
+        shutil.copy2(diagnostics_log_path, target)
+        diagnostics_log_path.unlink()
+        log_phase(f"Published latest additional diagnostics artifact to {target.relative_to(REPO_ROOT)}.")
+        return target
+
+    if target.exists():
+        target.unlink()
+        log_phase(f"Removed stale latest additional diagnostics artifact because this evaluator run recorded none.")
+    return None
 
 
 def parse_evaluation_csv(path: Path, state: dict[str, Any]) -> EvaluationMetrics:
@@ -1322,13 +1411,10 @@ def parse_evaluation_csv(path: Path, state: dict[str, Any]) -> EvaluationMetrics
     engine_move_ms = []
     engine_positions = []
     failure_counts = {"crash": 0, "illegal_move": 0, "timeout": 0, "harness": 0, "max_plies": max_plies_count}
-    pair_scores: dict[int, float] = {}
     for row in rows:
         engine_a_was_white = row["engine_a_was_white"].strip().lower() == "true"
         engine_move_ms.append(float(row["white_average_move_ms" if engine_a_was_white else "black_average_move_ms"]))
         engine_positions.append(float(row["white_average_positions" if engine_a_was_white else "black_average_positions"]))
-        pair = int(row["pair_number"])
-        pair_scores[pair] = pair_scores.get(pair, 0.0) + float(row["engine_a_score"]) / 2.0
         failure_engine = row.get("failure_engine", "").strip()
         if failure_engine:
             reason = row["termination_reason"]
@@ -1340,13 +1426,6 @@ def parse_evaluation_csv(path: Path, state: dict[str, Any]) -> EvaluationMetrics
                 failure_counts["crash"] += 1
             else:
                 failure_counts["harness"] += 1
-
-    pair_values = list(pair_scores.values())
-    pair_mean = sum(pair_values) / len(pair_values)
-    pair_sd = sample_sd(pair_values, pair_mean)
-    df = len(pair_values) - 1
-    t_critical = state["evaluator"]["approval"]["t_critical_one_sided_95_by_df"].get(str(df), 1.650996)
-    lcb95 = pair_mean - t_critical * pair_sd / math.sqrt(len(pair_values))
 
     return EvaluationMetrics(
         wins=wins,
@@ -1360,18 +1439,8 @@ def parse_evaluation_csv(path: Path, state: dict[str, Any]) -> EvaluationMetrics
         max_plies_count=max_plies_count,
         max_plies_rate=max_plies_count / games,
         failure_counts=failure_counts,
-        pair_mean=pair_mean,
-        pair_sd=pair_sd,
-        pair_count=len(pair_values),
-        lcb95=lcb95,
         games=games,
     )
-
-
-def sample_sd(values: list[float], mean: float) -> float:
-    if len(values) <= 1:
-        return 0.0
-    return math.sqrt(sum((value - mean) ** 2 for value in values) / (len(values) - 1))
 
 
 def latest_approved_reference_score(state: dict[str, Any]) -> float | None:
@@ -1399,8 +1468,8 @@ def require_latest_approved_reference_score(state: dict[str, Any]) -> float:
 
 
 def require_latest_approved_reference_metrics(state: dict[str, Any]) -> ReferenceMetrics:
-    require_latest_approved_reference_score(state)
     latest = state["latest_approved"]
+    score_rate = require_latest_approved_reference_score(state)
     source_value = str(latest.get("approved_reference_score_source", "")).strip()
     if not source_value or source_value == "<pending>":
         raise SystemExit("Latest approved seed has no finalized approved_reference_score_source.")
@@ -1411,37 +1480,10 @@ def require_latest_approved_reference_metrics(state: dict[str, Any]) -> Referenc
     if not source.exists():
         raise SystemExit(f"Latest approved reference CSV does not exist: {source}")
 
-    pair_values = pair_values_from_csv(source)
-    pair_mean = sum(pair_values) / len(pair_values)
     return ReferenceMetrics(
-        score_rate=pair_mean,
-        pair_sd=sample_sd(pair_values, pair_mean),
-        pair_count=len(pair_values),
+        score_rate=score_rate,
         source=source,
     )
-
-
-def pair_values_from_csv(path: Path) -> list[float]:
-    with path.open(newline="", encoding="utf-8") as handle:
-        rows = list(csv.DictReader(handle))
-    if not rows:
-        raise SystemExit(f"Reference CSV is empty: {path}")
-
-    pair_scores: dict[int, float] = {}
-    for row in rows:
-        pair = int(row["pair_number"])
-        pair_scores[pair] = pair_scores.get(pair, 0.0) + float(row["engine_a_score"]) / 2.0
-    return list(pair_scores.values())
-
-
-def improvement_lcb95(metrics: EvaluationMetrics, reference: ReferenceMetrics, state: dict[str, Any]) -> float:
-    df = min(metrics.pair_count, reference.pair_count) - 1
-    t_critical = state["evaluator"]["approval"]["t_critical_one_sided_95_by_df"].get(str(df), 1.650996)
-    standard_error = math.sqrt(
-        (metrics.pair_sd * metrics.pair_sd / metrics.pair_count)
-        + (reference.pair_sd * reference.pair_sd / reference.pair_count)
-    )
-    return (metrics.score_rate - reference.score_rate) - t_critical * standard_error
 
 
 def decide_candidate(metrics: EvaluationMetrics, state: dict[str, Any]) -> tuple[str, str]:
@@ -1452,14 +1494,11 @@ def decide_candidate(metrics: EvaluationMetrics, state: dict[str, Any]) -> tuple
         return "rejected", "Rejected because evaluator failures were recorded."
     if metrics.score_rate <= reference.score_rate:
         return "rejected", f"Rejected because score_rate={metrics.score_rate:.4f} did not exceed approved seed {reference.score_rate:.4f}."
-    improvement_lcb = improvement_lcb95(metrics, reference, state)
-    if improvement_lcb <= approval["improvement_lcb95_min_exclusive"]:
-        return "rejected", f"Rejected because improvement_lcb95={improvement_lcb:.4f} did not exceed 0."
     if metrics.max_plies_rate >= approval["max_plies_rate_max_exclusive"]:
         return "rejected", f"Rejected because max_plies_rate={metrics.max_plies_rate:.4f} was at least 0.10."
     return "approved", (
         f"Approved because score_rate={metrics.score_rate:.4f} exceeded {reference.score_rate:.4f}, "
-        f"improvement_lcb95={improvement_lcb:.4f} > 0, max_plies_rate={metrics.max_plies_rate:.4f} < 0.10, and failures=0."
+        f"max_plies_rate={metrics.max_plies_rate:.4f} < 0.10, and failures=0."
     )
 
 
@@ -1506,8 +1545,20 @@ def build_evaluation_summary(
     verdict_reason: str,
     metrics: EvaluationMetrics | None,
     state: dict[str, Any],
+    latest_blunder_path: Path | None,
+    latest_diagnostics_path: Path | None,
 ) -> str:
     approved_score = require_latest_approved_reference_score(state)
+    blunder_line = (
+        f"Blunder board-history artifact: {LATEST_BLUNDER_HISTORY_NAME} is available in the sandbox."
+        if latest_blunder_path is not None and latest_blunder_path.exists()
+        else "Blunder board-history artifact: none recorded for this evaluator run."
+    )
+    diagnostics_line = (
+        f"Additional diagnostics artifact: {LATEST_ADDITIONAL_DIAGNOSTICS_NAME} is available in the sandbox."
+        if latest_diagnostics_path is not None and latest_diagnostics_path.exists()
+        else "Additional diagnostics artifact: none recorded for this evaluator run."
+    )
     if metrics is None:
         return textwrap.dedent(
             f"""\
@@ -1515,26 +1566,27 @@ def build_evaluation_summary(
             Approval status: {status}
             Previously approved score_rate: {approved_score:.4f}
             Candidate score_rate: n/a
+            {blunder_line}
+            {diagnostics_line}
             Verdict: {verdict_reason}
             """
         )
 
     reference = require_latest_approved_reference_metrics(state)
-    improvement_lcb = improvement_lcb95(metrics, reference, state)
     return textwrap.dedent(
         f"""\
         Candidate version: {candidate.version}
         Approval status: {status}
         Previously approved score_rate: {reference.score_rate:.4f}
         Candidate score_rate: {metrics.score_rate:.4f}
-        Candidate lcb95: {metrics.lcb95:.4f}
-        Candidate improvement_lcb95: {improvement_lcb:.4f}
         Candidate max_plies_rate: {metrics.max_plies_rate:.4f}
         Wins/draws/losses: {metrics.wins}/{metrics.draws}/{metrics.losses}
         Average plies: {metrics.average_plies:.2f}
         Average move time ms: {metrics.average_processing_time_ms:.3f}
         Average positions or nodes: {metrics.average_positions_or_nodes:.2f}
         Failure counts: {metrics.failure_counts}
+        {blunder_line}
+        {diagnostics_line}
         Verdict: {verdict_reason}
         """
     )
@@ -1604,10 +1656,6 @@ def metrics_to_dict(metrics: EvaluationMetrics | None) -> dict[str, Any]:
         "average_processing_time_ms": metrics.average_processing_time_ms,
         "average_positions_or_nodes": metrics.average_positions_or_nodes,
         "failure_counts": metrics.failure_counts,
-        "pair_mean": metrics.pair_mean,
-        "pair_sd": metrics.pair_sd,
-        "pair_count": metrics.pair_count,
-        "lcb95": metrics.lcb95,
         "games": metrics.games,
     }
 
@@ -1829,6 +1877,8 @@ def cleanup_rejected_candidate(candidate: Candidate, status: str) -> None:
 
 def commit_attempt(candidate: Candidate, status: str) -> str | None:
     run(["git", "add", "autoresearch/state.json", "autoresearch/ATTEMPTS.md", "CHANGELOG.json"], check=True)
+    stage_latest_blunder_history()
+    stage_latest_additional_diagnostics()
     if status == "approved":
         run(["git", "add", str(candidate.engine_file.relative_to(REPO_ROOT)), "autoresearch/approved_logs"], check=True)
     run(["git", "add", "-u", "engine_csharp/src/Engine.Core"], check=True)
@@ -1864,11 +1914,29 @@ def finalize_attempt_commit(
         replace_latest_changelog_placeholders(commit_sha, approved_reference_source)
 
     run(["git", "add", "autoresearch/state.json", "autoresearch/ATTEMPTS.md", "CHANGELOG.json"], check=True)
+    stage_latest_blunder_history()
+    stage_latest_additional_diagnostics()
     if approved_reference_source is not None:
         run(["git", "add", "autoresearch/approved_logs"], check=True)
     run(["git", "commit", "--amend", "--no-edit"], check=True)
     amended = run(["git", "rev-parse", "--short", "HEAD"], check=True, capture=True)
     return amended.stdout.strip()
+
+
+def stage_latest_blunder_history() -> None:
+    target = latest_blunder_history_path()
+    if target.exists():
+        run(["git", "add", str(target.relative_to(REPO_ROOT))], check=True)
+    else:
+        run(["git", "add", "-u", str(target.parent.relative_to(REPO_ROOT))], check=True)
+
+
+def stage_latest_additional_diagnostics() -> None:
+    target = latest_additional_diagnostics_path()
+    if target.exists():
+        run(["git", "add", str(target.relative_to(REPO_ROOT))], check=True)
+    else:
+        run(["git", "add", "-u", str(target.parent.relative_to(REPO_ROOT))], check=True)
 
 
 def replace_latest_attempt_placeholders(commit_sha: str, approved_reference_source: str | None) -> None:

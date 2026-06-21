@@ -286,7 +286,8 @@ dotnet run --project engine_csharp/src/LocalTesting -- evaluate-stock \
   --max-plies 200 \
   --workers 6 \
   --log \
-  --short-sha <attempt_id>
+  --short-sha <attempt_id> \
+  --record-blunder
 ```
 
 `run_autoresearch.py` supplies the concrete candidate path and attempt id from
@@ -294,6 +295,36 @@ its current state, and it resolves the Linux-local
 `autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2` binary.
 Do not change these constants during normal experiments; edit `state.json` only
 when intentionally revising the workflow outside an active candidate run.
+
+Autoresearch enables `--record-blunder` for evaluator runs. With that flag,
+`LocalTesting` tracks only the worst candidate non-winning game where a positive
+candidate score before its move becomes negative on the candidate's next search
+after the opponent reply. Candidate wins are ignored. If a qualifying overturn
+exists, the per-attempt JSON is published by the orchestrator to:
+
+```text
+autoresearch/approved_logs/latest-blunder_game-board-history.json
+```
+
+That stable file is overwritten by each evaluator run, or removed when the run
+records no qualifying blunder. The orchestrator copies it into future sandboxes
+when present, and the generated `PROGRAM.md` instructs the agent to inspect it
+before choosing hypotheses and before writing the evaluation conclusion.
+
+Candidate engines may also emit optional per-search diagnostics by populating
+the `Diagnostics` dictionary on `SearchResult`. This does not change the public
+engine method signature, and older engines that omit diagnostics continue to
+work normally. `LocalTesting` automatically aggregates diagnostics from
+candidate/engine-A moves during logged evaluator runs and publishes them to:
+
+```text
+autoresearch/approved_logs/latest-additional_diagnostics.json
+```
+
+This file is also overwritten or removed by each completed evaluator run, then
+copied into future sandboxes when present. Prefer cheap numeric diagnostics such
+as TT occupancy rate, cold miss rate, pruning counts, extension counts, or other
+search-shape counters that help explain the evaluation result.
 
 The evaluator must produce a canonical CSV at:
 
@@ -361,43 +392,20 @@ A candidate is approved only when all of these are true:
 - the evaluator completes and writes the canonical CSV
 - the candidate records no crash, illegal move, timeout, or harness failure
 - `score_rate > latest_approved.approved_reference_score_rate_vs_current_baseline`
-- `improvement_lcb95 > 0`
 - `max_plies_rate < 0.10`
 
 Otherwise the candidate is rejected.
 
-The approval decision is based on paired color-swapped results. For each pair
-`i`, define one candidate-as-White game and one candidate-as-Black game. Assign
-single-game score as win `1.0`, draw `0.5`, loss `0.0`, then compute:
+The approval decision uses raw aggregate score against the latest approved
+reference on the same evaluator baseline. Assign single-game score as win
+`1.0`, draw `0.5`, loss `0.0`, then compute:
 
 ```text
-p_i = (score_as_white_i + score_as_black_i) / 2
-```
-
-With `n = games / 2` pairs:
-
-```text
-mean = (1 / n) * sum(p_i)
-sd = sample standard deviation of p_i
-lcb95 = mean - t_(0.95, n-1) * sd / sqrt(n)
 score_rate = total_score / games
 ```
 
-Candidate approval uses a lower confidence bound on improvement over the latest
-approved reference against the same evaluator baseline:
-
-```text
-improvement_lcb95 =
-  (candidate_score_rate - approved_reference_score_rate)
-  - t * sqrt(candidate_pair_sd^2 / candidate_pairs + approved_pair_sd^2 / approved_pairs)
-```
-
-The candidate clears the confidence gate when `improvement_lcb95 > 0`. This is
-an improvement-over-seed test, not a requirement that the candidate itself have
-`lcb95 > 0.5` against Stockfish.
-
-For the standard 1000-game run, `state.json` records one-sided 95% Student-t
-critical values for the relevant paired-result degrees of freedom.
+Candidate approval requires the candidate `score_rate` to exceed the latest
+approved seed's recorded score rate against the current evaluator baseline.
 
 ## Attempt Recording
 

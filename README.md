@@ -198,10 +198,10 @@ dotnet run --project engine_csharp/src/LocalTesting -- puzzle-2 --engine-file en
 dotnet run --project engine_csharp/src/LocalTesting -- endgame-1 --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --time-limit-seconds 1.0
 dotnet run --project engine_csharp/src/LocalTesting -- endgame-2 --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --time-limit-seconds 1.0
 dotnet run --project engine_csharp/src/LocalTesting -- evaluate-match --engine-a-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --engine-b-file engine_csharp/src/Engine.Core/V3/V3_0Engine.cs --games 20 --time-limit-ms 100 --max-plies 200 --workers 6
-dotnet run --project engine_csharp/src/LocalTesting -- evaluate-stock --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --stockfish-path autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2 --stockfish-elo 1800 --games 1000 --time-limit-ms 100 --max-plies 200 --workers 6 --log --short-sha 1a2b3c4
+dotnet run --project engine_csharp/src/LocalTesting -- evaluate-stock --engine-file engine_csharp/src/Engine.Core/V3/V3_4Engine.cs --stockfish-path autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2 --stockfish-elo 1800 --games 1000 --time-limit-ms 100 --max-plies 200 --workers 6 --log --short-sha 1a2b3c4 --record-blunder
 ```
 
-For Linux, the documented local path is `autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2` after extracting the official tarball above. On Windows, install Stockfish separately and pass the extracted executable path with `--stockfish-path`. The standard autoresearch evaluator contract uses `stockfish-1800`, `1000` games, `100ms` per move, `200` max plies, `6` workers, `--log`, and a unique `--short-sha` attempt id. See `autoresearch/README.md` for the current approval contract and any workflow-specific overrides.
+For Linux, the documented local path is `autoresearch/stockfish/stockfish/stockfish-ubuntu-x86-64-avx2` after extracting the official tarball above. On Windows, install Stockfish separately and pass the extracted executable path with `--stockfish-path`. The standard autoresearch evaluator contract uses `stockfish-1800`, `1000` games, `100ms` per move, `200` max plies, `6` workers, `--log`, `--record-blunder`, and a unique `--short-sha` attempt id. See `autoresearch/README.md` for the current approval contract and any workflow-specific overrides.
 
 ## Autoresearch
 
@@ -225,4 +225,4 @@ that file with `summary`/`implementation_summary`, hypotheses, standardized
 Stockfish score text, and empty limitations by default. New approved candidates are recorded with
 `"served": false` until the HTTP API is explicitly wired to expose that version.
 
-Approval requires a clean build, a completed evaluator run, no illegal/crash failures, and `lcb95 > 0.5`.
+Approval requires a clean build, a completed evaluator run, no illegal/crash failures, `score_rate` above the latest approved seed's current-baseline reference score, and `max_plies_rate < 0.10`.

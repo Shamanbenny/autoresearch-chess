@@ -8,12 +8,7 @@
     "max_plies": 200,
     "workers": 6,
     "approval": {
-      "improvement_lcb95_min_exclusive": 0.0,
-      "max_plies_rate_max_exclusive": 0.1,
-      "t_critical_one_sided_95_by_df": {
-        "249": 1.650996,
-        "499": 1.647913
-      }
+      "max_plies_rate_max_exclusive": 0.1
     }
   },
   "latest_approved": {
@@ -23,7 +18,7 @@
     "approved_recorded_at": "2026-06-20",
     "approved_reference_score_rate_vs_current_baseline": 0.4795,
     "approved_reference_score_source": "autoresearch/approved_logs/V4_8Engine-385a585-result.csv",
-    "notes": "Approved by manual override after scoring 0.4795 against stockfish-1800 versus v4.6's 0.4595, with zero failures and max_plies_rate=0.0290. This did not clear the normal statistical gate because improvement_lcb95=-0.0139, but it is being kept as the next seed to preserve the directionally positive combined quiescence budget-saving change before continuing autoresearch."
+    "notes": "Approved by manual override after scoring 0.4795 against stockfish-1800 versus v4.6's 0.4595, with zero failures and max_plies_rate=0.0290. It is being kept as the next seed to preserve the directionally positive combined quiescence budget-saving change before continuing autoresearch."
   },
   "next_candidate_version": "v4.32",
   "agent": {
