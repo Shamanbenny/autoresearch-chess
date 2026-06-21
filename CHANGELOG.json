@@ -1787,6 +1787,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.34",
+      "api_version": "v4_34",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_34Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A bounded queen-and-bishop king-contact danger term will reduce optimistic material-grabbing moves in positions like the latest repeated-check mating-net blunder without broadening quiescence, adding extensions, or perturbing move ordering throughput."
+      ],
+      "summary": "Added a phase-gated king-contact danger penalty during the existing evaluation snapshot: when enemy queens remain, penalize close queen contact, queen pressure on the king ring, bishop/queen diagonal pressure on the king ring, and low defender king mobility. Search, quiescence, pruning thresholds, TT sizing, move ordering, and public API shape are unchanged.",
+      "implementation_summary": "Added a phase-gated king-contact danger penalty during the existing evaluation snapshot: when enemy queens remain, penalize close queen contact, queen pressure on the king ring, bishop/queen diagonal pressure on the king ring, and low defender king mobility. Search, quiescence, pruning thresholds, TT sizing, move ordering, and public API shape are unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 316,
+          "draws": 178,
+          "losses": 506,
+          "score": 405.0,
+          "score_rate": 0.405,
+          "text": "C# v4.34 scored 405.0/1000 against Stockfish (1800 Elo): 316 wins, 178 draws, 506 losses, score rate 0.4050."
+        }
+      },
+      "limitations": []
     }
   ]
 }

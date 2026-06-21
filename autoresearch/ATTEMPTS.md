@@ -1413,3 +1413,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `103.6683`
 - average_positions_or_nodes: `6668.0934`
 - inferred_conclusion: `Rejected: the constrained shallow check-evasion extension badly regressed score_rate to 0.3925 versus the approved v4.8 reference at 0.4795, with average nodes falling to 6668.09 from the approved seed's roughly 7542-node baseline. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0390, but the extra in-check depth was far too expensive and did not solve the tactical failure mode. Compared with the approved blunder's repeated Bh2+/Bg3+/Qh2+ mating net, the current candidate's worst overturn was simpler: after optimistic Qxa5 at ply 71, Stockfish immediately played Qg2#. This points less to insufficient search depth in constrained check-evasion nodes and more to a root/leaf king-safety or opponent-mate-threat horizon flaw before the candidate chooses material-grabbing queen moves. Future V4 experiments should avoid check-evasion extension variants on this branch and instead target cheap detection or ordering of direct opponent mate threats, especially queen contact threats around the king, without broadening extension budgets.`
+
+## Attempt: 2026-06-21T04:50:48Z - v4.34
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.34`
+- version_bump: `minor`
+- hypotheses:
+  - `A bounded queen-and-bishop king-contact danger term will reduce optimistic material-grabbing moves in positions like the latest repeated-check mating-net blunder without broadening quiescence, adding extensions, or perturbing move ordering throughput.`
+- implementation_summary: `Added a phase-gated king-contact danger penalty during the existing evaluation snapshot: when enemy queens remain, penalize close queen contact, queen pressure on the king ring, bishop/queen diagonal pressure on the king ring, and low defender king mobility. Search, quiescence, pruning thresholds, TT sizing, move ordering, and public API shape are unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `316/178/506`
+- score: `405.0`
+- score_rate: `0.4050`
+- average_plies: `100.3580`
+- average_processing_time_ms: `101.4028`
+- average_positions_or_nodes: `6448.6039`
+- inferred_conclusion: `Rejected: the bounded queen/bishop king-contact danger term badly reduced score_rate to 0.4050 versus the approved v4.8 reference at 0.4795, with average nodes falling to 6448.60 from the roughly 7542-node seed baseline. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0350, so the regression is move-quality and throughput, not reliability. Compared with the approved blunder's Bh2+/Bg3+/Qh2+ queen-and-bishop mating net after optimistic Qd5, the current candidate's worst overturn still missed a mating attack but shifted to Qf6 allowing Rxc2+/Rxb2+/Rxa2+ and Qc2#. The static king-contact penalty did not reliably prevent exposed-king tactics and likely over-penalized or distorted many normal queen-present positions while adding repeated king-ring attack scans to evaluation. Future V4 work should avoid broad static king-ring danger terms on this branch; if targeting mate threats, prefer a much narrower direct-threat detector or root candidate veto for immediate opponent forcing checks, including rook/queen second-rank invasions, with explicit throughput protection.`
