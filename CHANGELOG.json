@@ -1979,6 +1979,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.41",
+      "api_version": "v4_41",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_41Engine.cs",
+      "served": false,
+      "status": "approved",
+      "commit": "a8bfe1e",
+      "hypotheses": [
+        "The latest v4.39 blunder is a high-scoring quiet root move, f4, that misses a forcing bishop/queen checking net; a root-only verification probe for quiet moves that look clearly winning may catch this class of horizon failure without broad quiet-check ordering, quiescence broadening, or static king-danger scans.",
+        "Using a zero-window one-ply-deeper verification around a modest winning floor should be cheaper and less distorting than prior root-wide legal checking-threat scans, because it only runs for potential root-best quiet moves already evaluated above 700cp.",
+        "Bounding the verification to at most two quiet root-best candidates per root iteration should preserve most of v4.39's node throughput while reducing optimistic quiet material/position moves in volatile attacking positions."
+      ],
+      "summary": "Added a root-only high-score quiet-move verification path: when a potential root-best quiet move scores at least 700cp at depth 3 or deeper, the engine runs one extra-ply zero-window verification against a 250cp winning floor and demotes the move only if that probe fails low. The verification is capped at two quiet root-best candidates per root iteration; evaluation, quiescence, pruning thresholds, move ordering scores, TT sizing, adaptive aspiration windows, and public API shape are otherwise unchanged.",
+      "implementation_summary": "Added a root-only high-score quiet-move verification path: when a potential root-best quiet move scores at least 700cp at depth 3 or deeper, the engine runs one extra-ply zero-window verification against a 250cp winning floor and demotes the move only if that probe fails low. The verification is capped at two quiet root-best candidates per root iteration; evaluation, quiescence, pruning thresholds, move ordering scores, TT sizing, adaptive aspiration windows, and public API shape are otherwise unchanged.",
+      "evaluation_log_path": "autoresearch/approved_logs/V4_41Engine-a8bfe1e-result.csv",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 395,
+          "draws": 203,
+          "losses": 402,
+          "score": 496.5,
+          "score_rate": 0.4965,
+          "text": "C# v4.41 scored 496.5/1000 against Stockfish (1800 Elo): 395 wins, 203 draws, 402 losses, score rate 0.4965."
+        }
+      },
+      "limitations": []
     }
   ]
 }

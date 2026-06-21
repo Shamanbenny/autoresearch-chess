@@ -1570,3 +1570,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `102.2701`
 - average_positions_or_nodes: `5837.6401`
 - inferred_conclusion: `Rejected at 0.4480 versus the 0.4885 approved seed. Comparing blunders, the prior v4.39 overturn was f4 allowing the quiet checking refutation Bd4+, while v4.40's worst overturn is a different queen-check mate sequence after Qxa7 allowed Qg4+. The quiet-check ordering hypothesis did not remove the underlying horizon/king-safety failure, and the evaluator's low average node count (5837.64) suggests the added MoveGivesCheck make/unmake work during shallow move ordering cost too much throughput. Future attempts should not score every shallow quiet by speculative check detection; prefer cheaper targeted king-danger detection at root/near-root, selective verification of candidate moves that expose the king, or a diagnosed time/search allocation fix that preserves node rate.`
+
+## Attempt: 2026-06-21T07:20:04Z - v4.41
+
+- status: `approved`
+- commit: `a8bfe1e`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.39`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_39Engine.cs`
+- candidate_version: `v4.41`
+- version_bump: `minor`
+- hypotheses:
+  - `The latest v4.39 blunder is a high-scoring quiet root move, f4, that misses a forcing bishop/queen checking net; a root-only verification probe for quiet moves that look clearly winning may catch this class of horizon failure without broad quiet-check ordering, quiescence broadening, or static king-danger scans.`
+  - `Using a zero-window one-ply-deeper verification around a modest winning floor should be cheaper and less distorting than prior root-wide legal checking-threat scans, because it only runs for potential root-best quiet moves already evaluated above 700cp.`
+  - `Bounding the verification to at most two quiet root-best candidates per root iteration should preserve most of v4.39's node throughput while reducing optimistic quiet material/position moves in volatile attacking positions.`
+- implementation_summary: `Added a root-only high-score quiet-move verification path: when a potential root-best quiet move scores at least 700cp at depth 3 or deeper, the engine runs one extra-ply zero-window verification against a 250cp winning floor and demotes the move only if that probe fails low. The verification is capped at two quiet root-best candidates per root iteration; evaluation, quiescence, pruning thresholds, move ordering scores, TT sizing, adaptive aspiration windows, and public API shape are otherwise unchanged.`
+- evaluation_log_path: `autoresearch/approved_logs/V4_41Engine-a8bfe1e-result.csv`
+- wins/draws/losses: `395/203/402`
+- score: `496.5`
+- score_rate: `0.4965`
+- average_plies: `98.6290`
+- average_processing_time_ms: `101.0999`
+- average_positions_or_nodes: `7435.1376`
+- inferred_conclusion: `Approved: v4.41 raised score_rate to 0.4965 versus the v4.39 approved seed at 0.4885, with zero evaluator failures and max_plies_rate=0.0370. Average nodes also improved slightly to 7435.14 versus v4.39's 7401.44, so the bounded root verification did not pay the throughput penalty seen in broader checking-threat and quiet-check-ordering attempts. Comparing blunders, v4.39's worst overturn was the quiet root move f4, scored +1014, allowing Bd4+ and a queen/bishop mate net; v4.41's remaining worst overturn shifted to the capture Nxf4, scored +1611, allowing Qxh7+ and a forced mate sequence. This supports the hypothesis that selective root verification of high-scoring quiet moves can improve root stability without distorting the whole search, but the remaining failure mode is still a forcing-check horizon issue, now outside the quiet-move gate. Future work should preserve this bounded root-verification policy and, if extending it, consider very narrow treatment of high-scoring root captures that expose the king rather than broad check generation, static king-danger evaluation, or quiescence broadening.`

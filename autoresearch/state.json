@@ -12,15 +12,15 @@
     }
   },
   "latest_approved": {
-    "version": "v4.39",
-    "engine_file": "engine_csharp/src/Engine.Core/V4/V4_39Engine.cs",
-    "commit": "8c16ab8",
+    "version": "v4.41",
+    "engine_file": "engine_csharp/src/Engine.Core/V4/V4_41Engine.cs",
+    "commit": "a8bfe1e",
     "approved_recorded_at": "2026-06-21",
-    "approved_reference_score_rate_vs_current_baseline": 0.4885,
-    "approved_reference_score_source": "autoresearch/approved_logs/V4_39Engine-8c16ab8-result.csv",
-    "notes": "Added an InitialAspirationWindow helper that keeps the existing 40cp root aspiration window near equal positions, but widens it by up to 160cp based on the previous completed iteration's absolute evaluation before aspiration re-search begins. Search semantics, evaluation, move ordering, quiescence, pruning, TT sizing, and public API shape are otherwise unchanged."
+    "approved_reference_score_rate_vs_current_baseline": 0.4965,
+    "approved_reference_score_source": "autoresearch/approved_logs/V4_41Engine-a8bfe1e-result.csv",
+    "notes": "Added a root-only high-score quiet-move verification path: when a potential root-best quiet move scores at least 700cp at depth 3 or deeper, the engine runs one extra-ply zero-window verification against a 250cp winning floor and demotes the move only if that probe fails low. The verification is capped at two quiet root-best candidates per root iteration; evaluation, quiescence, pruning thresholds, move ordering scores, TT sizing, adaptive aspiration windows, and public API shape are otherwise unchanged."
   },
-  "next_candidate_version": "v4.41",
+  "next_candidate_version": "v4.42",
   "agent": {
     "max_hypotheses_per_experiment": 3,
     "codex_turn_timeout_minutes": 15
