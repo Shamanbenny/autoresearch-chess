@@ -300,16 +300,25 @@ Autoresearch enables `--record-blunder` for evaluator runs. With that flag,
 `LocalTesting` tracks only the worst candidate non-winning game where a positive
 candidate score before its move becomes negative on the candidate's next search
 after the opponent reply. Candidate wins are ignored. If a qualifying overturn
-exists, the per-attempt JSON is published by the orchestrator to:
+exists and the candidate is approved, the per-attempt JSON is published by the
+orchestrator to:
 
 ```text
 autoresearch/approved_logs/latest-blunder_game-board-history.json
 ```
 
-That stable file is overwritten by each evaluator run, or removed when the run
-records no qualifying blunder. The orchestrator copies it into future sandboxes
-when present, and the generated `PROGRAM.md` instructs the agent to inspect it
-before choosing hypotheses and before writing the evaluation conclusion.
+That stable file represents the latest approved seed only. Rejected candidates
+must not overwrite or remove it. The orchestrator copies it into future
+sandboxes when present. After the current candidate is evaluated, its own
+per-attempt blunder artifact is copied into the same sandbox as:
+
+```text
+current-candidate-blunder_game-board-history.json
+```
+
+The generated `PROGRAM.md` instructs the agent to compare the current candidate
+artifact with the latest approved artifact when both exist before writing the
+evaluation conclusion.
 
 Candidate engines may also emit optional per-search diagnostics by populating
 the `Diagnostics` dictionary on `SearchResult`. This does not change the public

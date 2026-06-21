@@ -30,6 +30,7 @@ SANDBOX_ROOT = REPO_ROOT / "autoresearch-sandbox"
 TEXT_LOG_DIR = REPO_ROOT / "autoresearch" / "console-logs"
 LOCAL_ENV_PATH = REPO_ROOT / ".env"
 LATEST_BLUNDER_HISTORY_NAME = "latest-blunder_game-board-history.json"
+CURRENT_BLUNDER_HISTORY_NAME = "current-candidate-blunder_game-board-history.json"
 LATEST_ADDITIONAL_DIAGNOSTICS_NAME = "latest-additional_diagnostics.json"
 ENGINE_VERSION_RE = re.compile(r"^v(?P<major>\d+)\.(?P<minor>\d+)$", re.IGNORECASE)
 SOC_CC_EVALUATOR_WORKERS = 12
@@ -238,7 +239,8 @@ def main() -> int:
         blunder_log_path = REPO_ROOT / "autoresearch" / "logs" / f"{attempt_id}-blunder_game-board-history.json"
         diagnostics_log_path = REPO_ROOT / "autoresearch" / "logs" / f"{attempt_id}-additional-diagnostics.json"
         approved_log_path: Path | None = None
-        latest_blunder_path: Path | None = None
+        latest_approved_blunder_path = latest_blunder_history_path()
+        current_blunder_path: Path | None = None
         latest_diagnostics_path: Path | None = None
         should_publish_blunder_history = False
         should_publish_diagnostics = False
@@ -264,8 +266,8 @@ def main() -> int:
                     verdict_reason = (
                         "Rejected because this was an explicit smoke run, not the fixed 1000-game approval run."
                     )
-                latest_blunder_path = blunder_log_path if blunder_log_path.exists() else None
-                copy_latest_blunder_history_to_sandbox(candidate, latest_blunder_path)
+                current_blunder_path = blunder_log_path if blunder_log_path.exists() else None
+                copy_current_blunder_history_to_sandbox(candidate, current_blunder_path)
                 latest_diagnostics_path = diagnostics_log_path if diagnostics_log_path.exists() else None
                 copy_latest_additional_diagnostics_to_sandbox(candidate, latest_diagnostics_path)
                 if status == "approved":
@@ -282,7 +284,8 @@ def main() -> int:
             verdict_reason,
             metrics,
             state,
-            latest_blunder_path,
+            latest_approved_blunder_path,
+            current_blunder_path,
             latest_diagnostics_path,
         )
         log_phase("Sending evaluation summary back into the existing Codex session.")
@@ -319,8 +322,8 @@ def main() -> int:
                     experiment_log_start_line=experiment_log_start_line,
                 )
             return 1
-        if should_publish_blunder_history:
-            latest_blunder_path = publish_latest_blunder_history(blunder_log_path)
+        if should_publish_blunder_history and status == "approved":
+            publish_latest_blunder_history(blunder_log_path)
         elif blunder_log_path.exists():
             blunder_log_path.unlink()
         if should_publish_diagnostics:
@@ -735,7 +738,8 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
         - `PROGRAM.md`: this instruction file.
         - `{candidate.sandbox_engine_file.name}`: source file where you will be implementing the hypotheses.
         - `ATTEMPTS.md`: prior attempt history and their inferred conclusion
-        - `{LATEST_BLUNDER_HISTORY_NAME}`: optional latest evaluator blunder board-history artifact, present only when a prior run recorded one.
+        - `{LATEST_BLUNDER_HISTORY_NAME}`: optional latest approved seed blunder board-history artifact, present only when the approved seed recorded one.
+        - `{CURRENT_BLUNDER_HISTORY_NAME}`: optional current candidate blunder board-history artifact, present only after this candidate's evaluator run records one.
         - `{LATEST_ADDITIONAL_DIAGNOSTICS_NAME}`: optional latest aggregated engine diagnostics artifact, present only when a prior candidate emitted `SearchResult.Diagnostics`.
         - `RETURN.json`: machine-readable summary you must update.
         """
@@ -815,9 +819,10 @@ def agent_program(state: dict[str, Any], candidate: Candidate, user_input: str) 
         `max_plies_rate < 0.10`.
 
         A later prompt will include the evaluation result in this same Codex session.
-        If a new `{LATEST_BLUNDER_HISTORY_NAME}` file is present then, read it before writing
-        `inferred_conclusion` so the conclusion can explain whether the worst overturn points
-        to an evaluation, ordering, pruning, or horizon flaw. Then stop.
+        If `{CURRENT_BLUNDER_HISTORY_NAME}` is present then, compare it with
+        `{LATEST_BLUNDER_HISTORY_NAME}` when the latter exists before writing
+        `inferred_conclusion`, so the conclusion can explain whether the current candidate's
+        worst overturn points to an evaluation, ordering, pruning, or horizon flaw. Then stop.
 
         ## Optional Diagnostics
 
@@ -1215,7 +1220,8 @@ def run_codex_result_update(
             prompt=(
                 f"Here's your evaluation result for {candidate.version} Engine.\n\n"
                 f"{evaluation_summary}\n\n"
-                "Reminder: if `latest-blunder_game-board-history.json` or `latest-additional_diagnostics.json` "
+                "Reminder: if `current-candidate-blunder_game-board-history.json`, "
+                "`latest-blunder_game-board-history.json`, or `latest-additional_diagnostics.json` "
                 "exists in this sandbox, read it before writing the inferred conclusion. "
                 "Then update `RETURN.json` with your inferred conclusion, "
                 "and thank you for your help!"
@@ -1353,6 +1359,15 @@ def copy_latest_blunder_history_to_sandbox(candidate: Candidate, source: Path | 
     shutil.copy2(source, target)
 
 
+def copy_current_blunder_history_to_sandbox(candidate: Candidate, source: Path | None) -> None:
+    target = candidate.sandbox_dir / CURRENT_BLUNDER_HISTORY_NAME
+    if source is None or not source.exists():
+        if target.exists():
+            target.unlink()
+        return
+    shutil.copy2(source, target)
+
+
 def copy_latest_additional_diagnostics_to_sandbox(candidate: Candidate, source: Path | None) -> None:
     target = candidate.sandbox_dir / LATEST_ADDITIONAL_DIAGNOSTICS_NAME
     if source is None or not source.exists():
@@ -1368,12 +1383,12 @@ def publish_latest_blunder_history(blunder_log_path: Path) -> Path | None:
     if blunder_log_path.exists():
         shutil.copy2(blunder_log_path, target)
         blunder_log_path.unlink()
-        log_phase(f"Published latest blunder history artifact to {target.relative_to(REPO_ROOT)}.")
+        log_phase(f"Published approved blunder history artifact to {target.relative_to(REPO_ROOT)}.")
         return target
 
     if target.exists():
         target.unlink()
-        log_phase(f"Removed stale latest blunder history artifact because this evaluator run recorded none.")
+        log_phase("Removed stale approved blunder history artifact because the approved candidate recorded none.")
     return None
 
 
@@ -1544,14 +1559,20 @@ def build_evaluation_summary(
     verdict_reason: str,
     metrics: EvaluationMetrics | None,
     state: dict[str, Any],
-    latest_blunder_path: Path | None,
+    latest_approved_blunder_path: Path | None,
+    current_blunder_path: Path | None,
     latest_diagnostics_path: Path | None,
 ) -> str:
     approved_score = require_latest_approved_reference_score(state)
-    blunder_line = (
-        f"Blunder board-history artifact: {LATEST_BLUNDER_HISTORY_NAME} is available in the sandbox."
-        if latest_blunder_path is not None and latest_blunder_path.exists()
-        else "Blunder board-history artifact: none recorded for this evaluator run."
+    latest_blunder_line = (
+        f"Latest approved blunder board-history artifact: {LATEST_BLUNDER_HISTORY_NAME} is available in the sandbox."
+        if latest_approved_blunder_path is not None and latest_approved_blunder_path.exists()
+        else "Latest approved blunder board-history artifact: none available."
+    )
+    current_blunder_line = (
+        f"Current candidate blunder board-history artifact: {CURRENT_BLUNDER_HISTORY_NAME} is available in the sandbox."
+        if current_blunder_path is not None and current_blunder_path.exists()
+        else "Current candidate blunder board-history artifact: none recorded for this evaluator run."
     )
     diagnostics_line = (
         f"Additional diagnostics artifact: {LATEST_ADDITIONAL_DIAGNOSTICS_NAME} is available in the sandbox."
@@ -1565,7 +1586,8 @@ def build_evaluation_summary(
             Approval status: {status}
             Previously approved score_rate: {approved_score:.4f}
             Candidate score_rate: n/a
-            {blunder_line}
+            {latest_blunder_line}
+            {current_blunder_line}
             {diagnostics_line}
             Verdict: {verdict_reason}
             """
@@ -1584,7 +1606,8 @@ def build_evaluation_summary(
         Average move time ms: {metrics.average_processing_time_ms:.3f}
         Average positions or nodes: {metrics.average_positions_or_nodes:.2f}
         Failure counts: {metrics.failure_counts}
-        {blunder_line}
+        {latest_blunder_line}
+        {current_blunder_line}
         {diagnostics_line}
         Verdict: {verdict_reason}
         """
