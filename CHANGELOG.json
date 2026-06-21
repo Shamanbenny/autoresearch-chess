@@ -1760,6 +1760,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.33",
+      "api_version": "v4_33",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_33Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A constrained shallow check-evasion extension will help the engine see repeated-check mating nets like the latest Bh2+/Bg3+/Qh2+ failure without broadening quiescence or adding make/unmake check scoring during ordering.",
+        "Gating the extension to in-check nodes with at most three legal evasions should focus extra depth on forcing defensive positions while preserving most of v4.8's node throughput and tuned move ordering."
+      ],
+      "summary": "Added a capped one-ply extension for shallow in-check nodes when there are at most three legal evasions, sharing the existing child-depth extension slot with quiet-check extension so the two conditions do not stack; evaluation, quiescence filtering, TT sizing, move ordering scores, and public API shape are unchanged.",
+      "implementation_summary": "Added a capped one-ply extension for shallow in-check nodes when there are at most three legal evasions, sharing the existing child-depth extension slot with quiet-check extension so the two conditions do not stack; evaluation, quiescence filtering, TT sizing, move ordering scores, and public API shape are unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 284,
+          "draws": 217,
+          "losses": 499,
+          "score": 392.5,
+          "score_rate": 0.3925,
+          "text": "C# v4.33 scored 392.5/1000 against Stockfish (1800 Elo): 284 wins, 217 draws, 499 losses, score rate 0.3925."
+        }
+      },
+      "limitations": []
     }
   ]
 }

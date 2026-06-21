@@ -1391,3 +1391,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.2474`
 - average_positions_or_nodes: `6490.8536`
 - inferred_conclusion: `Rejected: early-ply quiet-check ordering reduced score_rate to 0.4520 versus the approved 0.4795 baseline, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0370. Average nodes fell sharply to 6490.85, so the make/unmake MoveGivesCheck cost during ordering hurt throughput and likely disrupted the tuned move-order balance more than it helped. The latest blunder still shows a queen-check mating net: after the candidate's optimistic Qxa5 at ply 57, Stockfish replied Qxh3+ and mate followed with Qh1#. Future V4 work should avoid make/unmake quiet-check scoring in move ordering; this failure points to a deeper king-safety/tactical horizon problem around opponent checking resources, not a problem solved by simply pushing own quiet checks earlier.`
+
+## Attempt: 2026-06-21T04:28:00Z - v4.33
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.33`
+- version_bump: `minor`
+- hypotheses:
+  - `A constrained shallow check-evasion extension will help the engine see repeated-check mating nets like the latest Bh2+/Bg3+/Qh2+ failure without broadening quiescence or adding make/unmake check scoring during ordering.`
+  - `Gating the extension to in-check nodes with at most three legal evasions should focus extra depth on forcing defensive positions while preserving most of v4.8's node throughput and tuned move ordering.`
+- implementation_summary: `Added a capped one-ply extension for shallow in-check nodes when there are at most three legal evasions, sharing the existing child-depth extension slot with quiet-check extension so the two conditions do not stack; evaluation, quiescence filtering, TT sizing, move ordering scores, and public API shape are unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `284/217/499`
+- score: `392.5`
+- score_rate: `0.3925`
+- average_plies: `97.4780`
+- average_processing_time_ms: `103.6683`
+- average_positions_or_nodes: `6668.0934`
+- inferred_conclusion: `Rejected: the constrained shallow check-evasion extension badly regressed score_rate to 0.3925 versus the approved v4.8 reference at 0.4795, with average nodes falling to 6668.09 from the approved seed's roughly 7542-node baseline. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0390, but the extra in-check depth was far too expensive and did not solve the tactical failure mode. Compared with the approved blunder's repeated Bh2+/Bg3+/Qh2+ mating net, the current candidate's worst overturn was simpler: after optimistic Qxa5 at ply 71, Stockfish immediately played Qg2#. This points less to insufficient search depth in constrained check-evasion nodes and more to a root/leaf king-safety or opponent-mate-threat horizon flaw before the candidate chooses material-grabbing queen moves. Future V4 experiments should avoid check-evasion extension variants on this branch and instead target cheap detection or ordering of direct opponent mate threats, especially queen contact threats around the king, without broadening extension budgets.`
