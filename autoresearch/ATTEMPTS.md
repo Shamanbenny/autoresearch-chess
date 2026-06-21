@@ -1526,3 +1526,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.1735`
 - average_positions_or_nodes: `7254.1683`
 - inferred_conclusion: `Rejected: v4.38 scored 0.4610 versus the approved v4.8 reference at 0.4795, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0370, but average nodes fell to 7254.17 from v4.8's 7542.32. The queen-contact guard reduced throughput and still did not prevent the target failure mode. The approved blunder was White Qd5 at ply 55, scored +1028, allowing Bh2+ and a queen/bishop mating net ending Qxf2#. The current worst overturn shifted to Black d3 at ply 72, scored +1604, allowing Qxh6+ followed by repeated queen checks and Rh6#. This suggests the problem is not specifically reverse-futility or null-move pruning in close enemy-queen positions; disabling those cutoffs is too broad or too late, and the remaining mate threats involve coordinated queen/rook forcing lines that still escape the normal search horizon. Future attempts should avoid more queen-contact pruning guards, broad check-threat scans, and added checking-line search; any progress likely needs a cheaper ordering/time-allocation idea or a very concrete proven-threat detector that replaces work rather than adding selective search cost.`
+
+## Attempt: 2026-06-21T06:37:30Z - v4.39
+
+- status: `approved`
+- commit: `8c16ab8`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.39`
+- version_bump: `minor`
+- hypotheses:
+  - `An adaptive root aspiration window will reduce expensive fail-low/fail-high re-searches in volatile or materially imbalanced positions while preserving v4.8's tuned narrow window for quiet low-score positions.`
+  - `Scaling the initial aspiration window from the previous completed iteration's absolute score should improve 100ms depth allocation without adding move generation, evaluation scans, quiescence breadth, extensions, pruning guards, or root threat heuristics.`
+  - `Buying back root search time in high-confidence tactical positions may help avoid horizon-driven optimistic material choices more reliably than the rejected broad check-threat and king-safety experiments.`
+- implementation_summary: `Added an InitialAspirationWindow helper that keeps the existing 40cp root aspiration window near equal positions, but widens it by up to 160cp based on the previous completed iteration's absolute evaluation before aspiration re-search begins. Search semantics, evaluation, move ordering, quiescence, pruning, TT sizing, and public API shape are otherwise unchanged.`
+- evaluation_log_path: `autoresearch/approved_logs/V4_39Engine-8c16ab8-result.csv`
+- wins/draws/losses: `408/161/431`
+- score: `488.5`
+- score_rate: `0.4885`
+- average_plies: `97.7180`
+- average_processing_time_ms: `101.0608`
+- average_positions_or_nodes: `7401.4370`
+- inferred_conclusion: `Approved: adaptive root aspiration windows improved score_rate to 0.4885 versus the approved v4.8 reference at 0.4795, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0390. Average nodes were 7401.44, slightly below v4.8's roughly 7542-node baseline, but the wider high-score window likely reduced enough volatile root re-search churn or stabilized root choices to overcome that small throughput drop. The latest approved blunder was White Qd5 at ply 55, scored +1028, allowing Bh2+/Bg3+/Qh2+/Qxf2#; v4.39's worst overturn shifted to White f4 at ply 57, scored +1014, allowing Bd4+/Qg3+/Bxf2 and Qg1#. This means the branch still has a forcing-check horizon weakness around exposed kings and queen/bishop coordination, but prior direct threat scans, check extensions, quiescence broadening, and king-danger eval were too costly or distorting. Future V4 work should preserve the v4.39 adaptive aspiration policy and prefer similarly cheap search-allocation or root-stability changes over adding new broad tactical scans.`

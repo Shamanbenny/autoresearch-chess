@@ -1925,6 +1925,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.39",
+      "api_version": "v4_39",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_39Engine.cs",
+      "served": false,
+      "status": "approved",
+      "commit": "8c16ab8",
+      "hypotheses": [
+        "An adaptive root aspiration window will reduce expensive fail-low/fail-high re-searches in volatile or materially imbalanced positions while preserving v4.8's tuned narrow window for quiet low-score positions.",
+        "Scaling the initial aspiration window from the previous completed iteration's absolute score should improve 100ms depth allocation without adding move generation, evaluation scans, quiescence breadth, extensions, pruning guards, or root threat heuristics.",
+        "Buying back root search time in high-confidence tactical positions may help avoid horizon-driven optimistic material choices more reliably than the rejected broad check-threat and king-safety experiments."
+      ],
+      "summary": "Added an InitialAspirationWindow helper that keeps the existing 40cp root aspiration window near equal positions, but widens it by up to 160cp based on the previous completed iteration's absolute evaluation before aspiration re-search begins. Search semantics, evaluation, move ordering, quiescence, pruning, TT sizing, and public API shape are otherwise unchanged.",
+      "implementation_summary": "Added an InitialAspirationWindow helper that keeps the existing 40cp root aspiration window near equal positions, but widens it by up to 160cp based on the previous completed iteration's absolute evaluation before aspiration re-search begins. Search semantics, evaluation, move ordering, quiescence, pruning, TT sizing, and public API shape are otherwise unchanged.",
+      "evaluation_log_path": "autoresearch/approved_logs/V4_39Engine-8c16ab8-result.csv",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 408,
+          "draws": 161,
+          "losses": 431,
+          "score": 488.5,
+          "score_rate": 0.4885,
+          "text": "C# v4.39 scored 488.5/1000 against Stockfish (1800 Elo): 408 wins, 161 draws, 431 losses, score rate 0.4885."
+        }
+      },
+      "limitations": []
     }
   ]
 }
