@@ -1306,3 +1306,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.1606`
 - average_positions_or_nodes: `7383.1709`
 - inferred_conclusion: `Rejected: feeding root-level quiet beta cutoffs into quiet history reduced score_rate to 0.4670 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0456. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0560, but average nodes fell to 7383.17 versus v4.8's 7542.32 and move quality regressed. Future V4 work should avoid root quiet-history reinforcement in this form; root cutoffs likely overfit aspiration-window/search-order artifacts and pollute later per-game quiet ordering more than they help.`
+
+## Attempt: 2026-06-21T01:41:00Z - v4.29
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.29`
+- version_bump: `minor`
+- hypotheses:
+  - `Removing the make/unmake-based quiet-check veto from already-guarded shallow quiet futility pruning will recover 100ms search budget without touching evaluation, move ordering, quiescence generation, or the existing depth/non-check/pawn-endgame safety gates.`
+- implementation_summary: `Changed CanFutilityPruneQuietMove so eligible shallow quiet moves are pruned directly when static evaluation plus the futility margin cannot reach alpha, instead of first calling MoveGivesCheck for each pruneable quiet move.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `369/188/443`
+- score: `463.0`
+- score_rate: `0.4630`
+- average_plies: `95.9910`
+- average_processing_time_ms: `100.7497`
+- average_positions_or_nodes: `7600.0031`
+- inferred_conclusion: `Rejected: removing the quiet-check veto from shallow quiet futility pruning increased average nodes to 7600.00 versus the v4.8 reference but reduced score_rate to 0.4630, with improvement_lcb95=-0.0491. The change was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0330, so the regression is a move-quality issue rather than reliability. Future V4 attempts should preserve the existing MoveGivesCheck safety check in quiet futility pruning despite its make/unmake overhead; pruning quiet checking moves at shallow depth loses too much tactical coverage.`

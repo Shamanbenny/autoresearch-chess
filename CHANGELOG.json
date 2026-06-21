@@ -1655,6 +1655,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.29",
+      "api_version": "v4_29",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_29Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Removing the make/unmake-based quiet-check veto from already-guarded shallow quiet futility pruning will recover 100ms search budget without touching evaluation, move ordering, quiescence generation, or the existing depth/non-check/pawn-endgame safety gates."
+      ],
+      "summary": "Changed CanFutilityPruneQuietMove so eligible shallow quiet moves are pruned directly when static evaluation plus the futility margin cannot reach alpha, instead of first calling MoveGivesCheck for each pruneable quiet move.",
+      "implementation_summary": "Changed CanFutilityPruneQuietMove so eligible shallow quiet moves are pruned directly when static evaluation plus the futility margin cannot reach alpha, instead of first calling MoveGivesCheck for each pruneable quiet move.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 369,
+          "draws": 188,
+          "losses": 443,
+          "score": 463.0,
+          "score_rate": 0.463,
+          "text": "C# v4.29 scored 463.0/1000 against Stockfish (1800 Elo): 369 wins, 188 draws, 443 losses, score rate 0.4630."
+        }
+      },
+      "limitations": []
     }
   ]
 }
