@@ -1777,3 +1777,26 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.0233`
 - average_positions_or_nodes: `7298.8669`
 - inferred_conclusion: `Rejected: v4.49 scored 0.4830 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0320. Average nodes fell to 7298.87 from v4.43's 7340.81, so the queen-plus-cramped-king null-move guard cost some search budget and did not improve aggregate move quality. Comparing blunders, the approved seed's worst overturn was ...Kg8 at ply 52, scored +1188, allowing Qh6 and a queen/bishop mating sequence; v4.49's worst overturn shifted much later to White Bc3 at ply 101, scored +1060, allowing ...g3+ and a forced promotion/checkmate line ending ...Qh5#. This means the guard changed the failure surface from a middlegame queen/bishop net to a late queen-and-passed-pawn forcing sequence, but did not address the underlying horizon issue around forcing checks near an exposed king. Future attempts should not continue broadening null-move suppression by king mobility or queen presence; it appears too blunt and slightly reduces throughput. The remaining promising direction is a more concrete, cheaper detector for immediate forcing checking/promotion threats, or a search allocation change that replaces existing work rather than adding another defensive guard.`
+
+## Attempt: 2026-06-21T10:44:32Z - v4.50
+
+- status: `approved`
+- commit: `93185d4`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.43`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_43Engine.cs`
+- candidate_version: `v4.50`
+- version_bump: `minor`
+- hypotheses:
+  - `The remaining v4.43 blunders are still forcing-check horizon failures, but recent broad tactical scans and stricter root verification degraded aggregate strength; reducing fewer shallow quiet moves may expose critical quiet defenses or refutations without adding new move-generation scans.`
+  - `Raising the late-move-reduction minimum depth from 3 to 4 preserves deeper-node reduction behavior while avoiding the most aggressive one-ply reduction at the first reducible depth.`
+  - `Keeping evaluation, quiescence, aspiration, root verification, null-move pruning, TT sizing, and move ordering bonuses otherwise unchanged isolates whether the v4.43 search shape was over-reducing shallow quiet non-check continuations.`
+- implementation_summary: `Raised LateMoveReductionMinDepth from 3 to 4, so quiet non-check late moves are no longer reduced at remaining depth 3. No public API, evaluation, quiescence, root verification, aspiration, null-move, TT, or move-order scoring changes were made.`
+- evaluation_log_path: `autoresearch/approved_logs/V4_50Engine-93185d4-result.csv`
+- wins/draws/losses: `419/169/412`
+- score: `503.5`
+- score_rate: `0.5035`
+- average_plies: `97.2450`
+- average_processing_time_ms: `101.1920`
+- average_positions_or_nodes: `7778.3133`
+- inferred_conclusion: `Approved: v4.50 scored 0.5035 versus the approved v4.43 reference at 0.5020, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0380. Average nodes rose to 7778.31 from v4.43's 7340.81, so raising the LMR minimum depth to 4 both improved throughput in this run and slightly improved aggregate move quality despite searching fewer reduced shallow quiet continuations. Comparing blunders, v4.43's worst overturn was the quiet king move ...Kg8 at ply 52, scored +1188, allowing Qh6 and a queen/bishop mate sequence; v4.50's worst overturn shifted to the king capture ...Kxf4 at ply 54, scored +1476, allowing Rh4+ followed by Qg4+ and Rh6#. This suggests the approved gain came from better shallow quiet-line reliability and search shape rather than solving the core exposed-king forcing-check horizon flaw. Future work should preserve the LMR depth-4 threshold, bishop-pair bonus, quiet-futility eval cache, adaptive aspiration, and quiet-root verification, while treating king-walk/queen-rook forcing checks as the remaining tactical weakness; avoid reverting to broad threat scans, static king-safety penalties, capture verification, or null-move suppression that recent attempts showed were too blunt.`

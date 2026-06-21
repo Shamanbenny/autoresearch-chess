@@ -12,15 +12,15 @@
     }
   },
   "latest_approved": {
-    "version": "v4.43",
-    "engine_file": "engine_csharp/src/Engine.Core/V4/V4_43Engine.cs",
-    "commit": "954dccd",
+    "version": "v4.50",
+    "engine_file": "engine_csharp/src/Engine.Core/V4/V4_50Engine.cs",
+    "commit": "93185d4",
     "approved_recorded_at": "2026-06-21",
-    "approved_reference_score_rate_vs_current_baseline": 0.502,
-    "approved_reference_score_source": "autoresearch/approved_logs/V4_43Engine-954dccd-result.csv",
-    "notes": "Added a 24 centipawn bishop-pair positional bonus for each side, and changed quiet futility pruning to populate and reuse the per-node nullable static evaluation by reference. The V4.41 high-score root verification remains limited to quiet moves."
+    "approved_reference_score_rate_vs_current_baseline": 0.5035,
+    "approved_reference_score_source": "autoresearch/approved_logs/V4_50Engine-93185d4-result.csv",
+    "notes": "Raised LateMoveReductionMinDepth from 3 to 4, so quiet non-check late moves are no longer reduced at remaining depth 3. No public API, evaluation, quiescence, root verification, aspiration, null-move, TT, or move-order scoring changes were made."
   },
-  "next_candidate_version": "v4.50",
+  "next_candidate_version": "v4.51",
   "agent": {
     "max_hypotheses_per_experiment": 3,
     "codex_turn_timeout_minutes": 15

@@ -2231,6 +2231,34 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.50",
+      "api_version": "v4_50",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_50Engine.cs",
+      "served": false,
+      "status": "approved",
+      "commit": "93185d4",
+      "hypotheses": [
+        "The remaining v4.43 blunders are still forcing-check horizon failures, but recent broad tactical scans and stricter root verification degraded aggregate strength; reducing fewer shallow quiet moves may expose critical quiet defenses or refutations without adding new move-generation scans.",
+        "Raising the late-move-reduction minimum depth from 3 to 4 preserves deeper-node reduction behavior while avoiding the most aggressive one-ply reduction at the first reducible depth.",
+        "Keeping evaluation, quiescence, aspiration, root verification, null-move pruning, TT sizing, and move ordering bonuses otherwise unchanged isolates whether the v4.43 search shape was over-reducing shallow quiet non-check continuations."
+      ],
+      "summary": "Raised LateMoveReductionMinDepth from 3 to 4, so quiet non-check late moves are no longer reduced at remaining depth 3. No public API, evaluation, quiescence, root verification, aspiration, null-move, TT, or move-order scoring changes were made.",
+      "implementation_summary": "Raised LateMoveReductionMinDepth from 3 to 4, so quiet non-check late moves are no longer reduced at remaining depth 3. No public API, evaluation, quiescence, root verification, aspiration, null-move, TT, or move-order scoring changes were made.",
+      "evaluation_log_path": "autoresearch/approved_logs/V4_50Engine-93185d4-result.csv",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 419,
+          "draws": 169,
+          "losses": 412,
+          "score": 503.5,
+          "score_rate": 0.5035,
+          "text": "C# v4.50 scored 503.5/1000 against Stockfish (1800 Elo): 419 wins, 169 draws, 412 losses, score rate 0.5035."
+        }
+      },
+      "limitations": []
     }
   ]
 }
