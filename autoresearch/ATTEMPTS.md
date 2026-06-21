@@ -1264,3 +1264,24 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.0961`
 - average_positions_or_nodes: `7375.8620`
 - inferred_conclusion: `Rejected: exempting killer and high quiet-history moves from late-move reduction reduced score_rate to 0.4750 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0377. The change was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0440, but average nodes fell to 7375.86, suggesting the extra full-depth quiet searches cost budget without improving move quality. Future V4 work should avoid broad LMR exemptions based only on killer/history signals; any LMR tuning should be more selective or paired with evidence that it preserves throughput.`
+
+## Attempt: 2026-06-21T01:00:21Z - v4.27
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.27`
+- version_bump: `minor`
+- hypotheses:
+  - `Doubling the persistent transposition-table size from 2^18 to 2^19 entries will reduce collision churn across a game and improve move reuse at 100ms without changing evaluation, pruning thresholds, quiescence behavior, or move generation.`
+- implementation_summary: `Increased TtSizeBits from 18 to 19, doubling the V4_27SearchContext transposition table from 262144 to 524288 entries while preserving all public APIs and search/evaluation semantics.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `385/173/442`
+- score: `471.5`
+- score_rate: `0.4715`
+- average_plies: `96.4010`
+- average_processing_time_ms: `100.9424`
+- average_positions_or_nodes: `7375.7488`
+- inferred_conclusion: `Rejected: doubling the persistent TT from 2^18 to 2^19 reduced score_rate to 0.4715 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0416. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0390, but average nodes fell to 7375.75, so the larger table likely hurt cache locality or search shape more than it reduced useful collisions. Future V4 work should keep the v4.8 table size and avoid pure TT-capacity increases unless paired with evidence of collision pressure or a replacement-policy change that preserves throughput.`

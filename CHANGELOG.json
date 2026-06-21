@@ -1603,6 +1603,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.27",
+      "api_version": "v4_27",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_27Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Doubling the persistent transposition-table size from 2^18 to 2^19 entries will reduce collision churn across a game and improve move reuse at 100ms without changing evaluation, pruning thresholds, quiescence behavior, or move generation."
+      ],
+      "summary": "Increased TtSizeBits from 18 to 19, doubling the V4_27SearchContext transposition table from 262144 to 524288 entries while preserving all public APIs and search/evaluation semantics.",
+      "implementation_summary": "Increased TtSizeBits from 18 to 19, doubling the V4_27SearchContext transposition table from 262144 to 524288 entries while preserving all public APIs and search/evaluation semantics.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 385,
+          "draws": 173,
+          "losses": 442,
+          "score": 471.5,
+          "score_rate": 0.4715,
+          "text": "C# v4.27 scored 471.5/1000 against Stockfish (1800 Elo): 385 wins, 173 draws, 442 losses, score rate 0.4715."
+        }
+      },
+      "limitations": []
     }
   ]
 }
