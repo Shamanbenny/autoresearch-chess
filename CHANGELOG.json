@@ -1733,6 +1733,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.32",
+      "api_version": "v4_32",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_32Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "Prioritizing quiet checking moves at the root and first two descendant plies will expose forcing queen/bishop checking nets earlier in alpha-beta without changing evaluation, pruning thresholds, or quiescence breadth.",
+        "Restricting the check-ordering bonus to early quiet moves should keep the overhead localized to tactically critical root continuations instead of repeating rejected broad quiet-check or quiescence expansions."
+      ],
+      "summary": "Added an early-ply quiet-check move-ordering bonus for quiet moves at ply 0-2 by reusing the existing MoveGivesCheck test during ordering; all evaluation, pruning, move generation, quiescence filtering, TT sizing, and public API shape are unchanged.",
+      "implementation_summary": "Added an early-ply quiet-check move-ordering bonus for quiet moves at ply 0-2 by reusing the existing MoveGivesCheck test during ordering; all evaluation, pruning, move generation, quiescence filtering, TT sizing, and public API shape are unchanged.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 367,
+          "draws": 170,
+          "losses": 463,
+          "score": 452.0,
+          "score_rate": 0.452,
+          "text": "C# v4.32 scored 452.0/1000 against Stockfish (1800 Elo): 367 wins, 170 draws, 463 losses, score rate 0.4520."
+        }
+      },
+      "limitations": []
     }
   ]
 }

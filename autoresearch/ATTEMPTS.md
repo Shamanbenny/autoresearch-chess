@@ -1369,3 +1369,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `101.1412`
 - average_positions_or_nodes: `7369.9932`
 - inferred_conclusion: `Rejected: the recapture move-ordering bonus reduced score_rate to 0.4425 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0704. The run was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0400, but average nodes fell to 7369.99 and move quality regressed sharply. Future V4 work should avoid this simple last-destination recapture ordering bonus; it likely over-prioritizes exchange continuations and disrupts the existing MVV/LVA, TT, killer, and history ordering balance.`
+
+## Attempt: 2026-06-21T03:56:36Z - v4.32
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.32`
+- version_bump: `minor`
+- hypotheses:
+  - `Prioritizing quiet checking moves at the root and first two descendant plies will expose forcing queen/bishop checking nets earlier in alpha-beta without changing evaluation, pruning thresholds, or quiescence breadth.`
+  - `Restricting the check-ordering bonus to early quiet moves should keep the overhead localized to tactically critical root continuations instead of repeating rejected broad quiet-check or quiescence expansions.`
+- implementation_summary: `Added an early-ply quiet-check move-ordering bonus for quiet moves at ply 0-2 by reusing the existing MoveGivesCheck test during ordering; all evaluation, pruning, move generation, quiescence filtering, TT sizing, and public API shape are unchanged.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `367/170/463`
+- score: `452.0`
+- score_rate: `0.4520`
+- average_plies: `99.6820`
+- average_processing_time_ms: `101.2474`
+- average_positions_or_nodes: `6490.8536`
+- inferred_conclusion: `Rejected: early-ply quiet-check ordering reduced score_rate to 0.4520 versus the approved 0.4795 baseline, with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0370. Average nodes fell sharply to 6490.85, so the make/unmake MoveGivesCheck cost during ordering hurt throughput and likely disrupted the tuned move-order balance more than it helped. The latest blunder still shows a queen-check mating net: after the candidate's optimistic Qxa5 at ply 57, Stockfish replied Qxh3+ and mate followed with Qh1#. Future V4 work should avoid make/unmake quiet-check scoring in move ordering; this failure points to a deeper king-safety/tactical horizon problem around opponent checking resources, not a problem solved by simply pushing own quiet checks earlier.`
