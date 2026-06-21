@@ -1549,6 +1549,33 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.25",
+      "api_version": "v4_25",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_25Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A small side-to-move tempo bonus should improve initiative and move-choice discrimination on top of v4.8 without adding search overhead or touching quiescence behavior.",
+        "Disabling the tempo bonus in pure pawn endgames should avoid encouraging zugzwang-prone positions where having the move can be a liability."
+      ],
+      "summary": "Added an 8 centipawn tempo bonus to evaluation when either side still has non-pawn material, preserving v4.8-derived search, pruning, move generation, and quiescence behavior.",
+      "implementation_summary": "Added an 8 centipawn tempo bonus to evaluation when either side still has non-pawn material, preserving v4.8-derived search, pruning, move generation, and quiescence behavior.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 385,
+          "draws": 174,
+          "losses": 441,
+          "score": 472.0,
+          "score_rate": 0.472,
+          "text": "C# v4.25 scored 472.0/1000 against Stockfish (1800 Elo): 385 wins, 174 draws, 441 losses, score rate 0.4720."
+        }
+      },
+      "limitations": []
     }
   ]
 }

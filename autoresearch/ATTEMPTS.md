@@ -1220,3 +1220,25 @@ Use this exact structure for each appended attempt:
 - average_processing_time_ms: `100.7624`
 - average_positions_or_nodes: `7478.9818`
 - inferred_conclusion: `Rejected: per-node quiet-futility static-eval caching reduced score_rate to 0.4730 versus the approved v4.8 reference at 0.4795, with improvement_lcb95=-0.0393. The change was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0320, while average nodes were 7478.98 versus the v4.8 reference. Future V4 attempts should not rely on this semantics-preserving caching as a standalone improvement; prioritize stronger move-quality changes and avoid further quiet-futility caching variants unless paired with an independently compelling tactical or evaluation gain.`
+
+## Attempt: 2026-06-21T00:19:30Z - v4.25
+
+- status: `rejected`
+- commit: `<n/a>`
+- evaluator_baseline: `stockfish-1800`
+- seed_version: `v4.8`
+- seed_file: `engine_csharp/src/Engine.Core/V4/V4_8Engine.cs`
+- candidate_version: `v4.25`
+- version_bump: `minor`
+- hypotheses:
+  - `A small side-to-move tempo bonus should improve initiative and move-choice discrimination on top of v4.8 without adding search overhead or touching quiescence behavior.`
+  - `Disabling the tempo bonus in pure pawn endgames should avoid encouraging zugzwang-prone positions where having the move can be a liability.`
+- implementation_summary: `Added an 8 centipawn tempo bonus to evaluation when either side still has non-pawn material, preserving v4.8-derived search, pruning, move generation, and quiescence behavior.`
+- evaluation_log_path: `<n/a>`
+- wins/draws/losses: `385/174/441`
+- score: `472.0`
+- score_rate: `0.4720`
+- average_plies: `98.0410`
+- average_processing_time_ms: `100.7322`
+- average_positions_or_nodes: `7610.7792`
+- inferred_conclusion: `Rejected: the 8 centipawn non-pawn-material tempo bonus increased average nodes slightly versus v4.8 but reduced score_rate to 0.4720 against the approved 0.4795 reference, with improvement_lcb95=-0.0413. The change was stable with zero crash/illegal/timeout/harness failures and acceptable max_plies_rate=0.0320, but the added initiative bias appears to distort move choice more than it helps. Future V4 attempts should avoid generic tempo tuning on this path and prioritize more concrete tactical or search-control improvements that preserve v4.8's quiescence budget behavior.`
