@@ -1707,6 +1707,32 @@
         }
       },
       "limitations": []
+    },
+    {
+      "version": "v4.31",
+      "api_version": "v4_31",
+      "engine_file": "engine_csharp/src/Engine.Core/V4/V4_31Engine.cs",
+      "served": false,
+      "status": "rejected",
+      "commit": "<n/a>",
+      "hypotheses": [
+        "A small recapture move-ordering bonus should improve alpha-beta cutoff quality in tactical exchanges without changing evaluation, pruning thresholds, quiescence breadth, or legal move generation."
+      ],
+      "summary": "Tracked the previous real move destination through native board make/unmake state and added a 1200-point ordering bonus for captures landing on that square, preserving all public APIs and search/evaluation semantics.",
+      "implementation_summary": "Tracked the previous real move destination through native board make/unmake state and added a 1200-point ordering bonus for captures landing on that square, preserving all public APIs and search/evaluation semantics.",
+      "evaluation_log_path": "<n/a>",
+      "evaluation_opponents": {
+        "stockfish-1800": {
+          "games": 1000,
+          "wins": 358,
+          "draws": 169,
+          "losses": 473,
+          "score": 442.5,
+          "score_rate": 0.4425,
+          "text": "C# v4.31 scored 442.5/1000 against Stockfish (1800 Elo): 358 wins, 169 draws, 473 losses, score rate 0.4425."
+        }
+      },
+      "limitations": []
     }
   ]
 }
